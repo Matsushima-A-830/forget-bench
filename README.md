@@ -64,6 +64,7 @@ bash scripts/check_env.sh
 ```
 forget-bench/
 ├── README.md
+├── LICENSE                # MIT
 ├── CLAUDE.md              # Claude Code で開発するときの指示
 ├── AGENTS.md              # エージェント共通の開発ルール(Claude Code / Codex / ローカルLLMエージェント)
 ├── docs/
@@ -89,3 +90,7 @@ forget-bench/
 LT会(2026年12月中旬予定)の発表用。
 「生成AIをそのまま使う」話ではなく、「LLMの記憶を自分で設計し、壊し、測る」話をする。
 下敷きは 100日チャレンジ(ai-100days)の Day 025 / 028 / 031 / 042 の検証([docs/prior-work.md](docs/prior-work.md))。
+
+## ライセンス
+
+[MIT](LICENSE)。他リポジトリから移植したコードは、該当ファイルの先頭に元のライセンスと出典を記載する(docs/prior-work.md)。
