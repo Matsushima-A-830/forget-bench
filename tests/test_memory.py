@@ -120,3 +120,72 @@ def test_full_redact_masks_only_forgotten_values() -> None:
         assert all(v in text for v in kept)
         # ターン数は変わらない(伏字にするだけ)
         assert s.stats().items == len(sc.turns)
+
+
+class _SummaryLLM:
+    """要約用の偽LLM: 「新しい会話」の値を足し、「削除要求」の値を消す。呼び出しを記録する。"""
+
+    name = "summary-fake"
+
+    def __init__(self) -> None:
+        self.calls: list[str] = []
+
+    def generate(self, messages: list[Message], *, max_tokens: int, temperature: float = 0.0) -> Generation:
+        user = messages[-1].content
+        self.calls.append(user)
+        current = user.split("\n\n", 1)[0].split("\n", 1)[1]
+        current = "" if current in ("(まだない)", "(none yet)") else current
+        if "削除要求" in user or "Deletion request" in user:
+            value = user.split("(", 1)[1].split(")", 1)[0]
+            return Generation(current.replace(value, "削除済み"), 1, 1, 0.0, None)
+        new = [line for line in user.splitlines() if line.startswith(("ユーザー: ", "User: "))]
+        return Generation("\n".join(filter(None, [current, *new])), 1, 1, 0.0, None)
+
+    def info(self) -> dict[str, str]:
+        return {}
+
+
+def test_summary_calls_and_forget() -> None:
+    from forget_bench.memory.base import ScenarioShape, estimate_memory_calls
+
+    sc = generate(1000, make_params())
+    llm = _SummaryLLM()
+    s = make_strategy("summary", _ctx(llm))
+    _feed(s, sc)
+    text = _context_text(s, sc)
+    assert not _leaks(text, sc)
+    shape = ScenarioShape(sum(t.role == "user" for t in sc.turns), sc.params.sessions, len(sc.forget_requests))
+    assert len(llm.calls) == s.stats().llm_calls == estimate_memory_calls("summary", shape, {})
+    # 最初の更新は1セッション目だけを含む
+    assert "[セッション 1]" in llm.calls[0] and "[セッション 2]" not in llm.calls[0]
+
+
+def test_summary_per_turn() -> None:
+    from forget_bench.memory.base import ScenarioShape, estimate_memory_calls
+
+    sc = generate(1001, make_params(sessions=2, turns_per_session=(6, 8), n_attributes=2, max_changes=2,
+                                    n_oneshot=1, n_sensitive=2, n_forget=1, aggregate_mentions=2))
+    llm = _SummaryLLM()
+    s = make_strategy("summary", _ctx(llm), update_every="turn")
+    _feed(s, sc)
+    s.build_context(sc.questions[0])
+    shape = ScenarioShape(sum(t.role == "user" for t in sc.turns), sc.params.sessions, len(sc.forget_requests))
+    assert len(llm.calls) == estimate_memory_calls("summary", shape, {"update_every": "turn"})
+
+
+def test_summary_failure_keeps_buffer() -> None:
+    class Failing:
+        name = "fail"
+
+        def generate(self, messages, *, max_tokens, temperature=0.0):  # noqa: ANN001, ANN201
+            from forget_bench.backends import BackendError
+            raise BackendError("x")
+
+        def info(self):  # noqa: ANN201
+            return {}
+
+    sc = generate(1000, make_params())
+    s = make_strategy("summary", _ctx(Failing()))
+    for t in sc.turns[:40]:
+        s.observe(t)
+    assert s.stats().errors >= 1 and s.summary == "" and len(s.buffer) > 0
