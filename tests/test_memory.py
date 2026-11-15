@@ -189,3 +189,41 @@ def test_summary_failure_keeps_buffer() -> None:
     for t in sc.turns[:40]:
         s.observe(t)
     assert s.stats().errors >= 1 and s.summary == "" and len(s.buffer) > 0
+
+
+def _rag_ctx(lang: str = "ja") -> StrategyContext:
+    from forget_bench.retrieval import make_embedder
+
+    return StrategyContext(lang, "SYSTEM", make_backend("dummy"), 256, embedder=make_embedder("hash"))
+
+
+def test_rag_retrieves_top_k_in_time_order_and_forgets() -> None:
+    sc = generate(1000, make_params())
+    s = make_strategy("rag", _rag_ctx(), top_k=5, mode="fusion")
+    _feed(s, sc)
+    for q in sc.questions:
+        msgs = s.build_context(q)
+        lines = [line for line in msgs[-1].content.splitlines() if line.startswith("- ")]
+        assert len(lines) == 5
+        order = [d.index for d in s.retriever.search(q.text)]
+        assert order == sorted(order) and len(set(order)) == 5
+        assert not _leaks(msgs[-1].content, sc)
+    n_user = sum(t.role == "user" for t in sc.turns)
+    removed = sum(len(r.source_turn_ids) for r in sc.forget_requests)
+    assert s.stats().items == n_user - removed and s.stats().deleted_items == removed
+
+
+def test_rag_bm25_finds_the_fact() -> None:
+    sc = generate(1000, make_params())
+    s = make_strategy("rag", _rag_ctx(), top_k=3, mode="bm25")
+    _feed(s, sc)
+    q = next(q for q in sc.questions if q.category == "oneshot")
+    assert any(contains_value(s.build_context(q)[-1].content, g) for g in q.gold)
+
+
+def test_rag_dense_requires_embedder() -> None:
+    import pytest
+
+    with pytest.raises(ValueError):
+        make_strategy("rag", _ctx())
+    make_strategy("rag", _ctx(), mode="bm25")  # BM25だけなら埋め込み不要
