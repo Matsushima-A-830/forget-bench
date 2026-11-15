@@ -1,0 +1,44 @@
+# 第2週: claude の規模スイープ。利用枠を消費するので、実行前に見積もりを人間に確認する(CLAUDE.md)。
+# 事実抽出は ollama と条件を揃えるためセッション単位(extract_every: session)。
+name: sweep-claude
+backend:
+  name: claude
+  params:
+    model: claude-opus-5-5
+    effort: low
+    auth: token
+generation:
+  max_tokens: 256
+  temperature: 0.0
+scenario:
+  langs: [ja, en]
+  split: dev
+  n_scenarios: 3
+  sessions: [5, 20, 50]
+  turns_per_session: [10, 20]
+  n_attributes: 4
+  max_changes: 4
+  n_oneshot: 3
+  n_sensitive: 3
+  n_forget: 2
+  aggregate_mentions: 4
+strategies:
+  - name: full
+  - name: full_redact
+  - name: window
+    params: {n_turns: 10}
+  - name: summary
+  - name: facts_append
+    params: {extract_every: session}
+  - name: facts_append
+    label: facts_append_oracle   # 抽出が完璧な場合の参照値(正解ラベルを使う)
+    params: {extractor: oracle}
+  - name: rag
+  - name: hybrid
+    params: {extract_every: session}
+# 温度を指定できないので同じ入力を3回送る(docs/protocol.md)。
+repeats: 3
+# 見積もりがこれを超えたら実行前に止まる。人間が確認したうえで --max-requests で上げる。
+max_requests: 100
+# (シナリオ × 戦略 × 繰り返し)を4並列で回す(利用枠は減らない。待ち時間だけ減る)。
+concurrency: 4

@@ -10,17 +10,22 @@ LLMエージェントの**メモリ戦略**(要約・追記・RAG・KVキャッ�
 クラウドLLM(Claude、`claude -p` 経由)とローカルLLM(Ollama / Hugging Face transformers)の両方で動かし、
 「テキストを操作するメモリ」と「推論中のKVキャッシュそのものを操作するメモリ」を同じ物差しで測る。
 
-> ステータス: **第1週(基盤 + テキスト層・ローカル)を実装中**。シナリオ生成器・採点器・`ollama` バックエンド・
-> 戦略 `full` / `window` / `facts_append` とランナーが動く。進め方は [docs/roadmap.md](docs/roadmap.md) を参照。
+> ステータス: **第2週(テキスト層の完成 + Claude)を実装中**。バックエンド `ollama` / `claude`、
+> テキスト層の全戦略(`full` / `full_redact` / `window` / `summary` / `facts_append` / `rag` / `hybrid`)、規模スイープが動く。
+> 進め方は [docs/roadmap.md](docs/roadmap.md) を参照。
 
 ## 使い方
 
 ```bash
 uv sync                                          # 依存インストール(テキスト層のみ)
+ollama pull bge-m3                               # rag / hybrid の埋め込み
 uv run pytest                                    # テスト(LLM不要)
 uv run forget-bench run configs/smoke.yaml --backend dummy   # LLMなしで全経路を通す
 uv run forget-bench run configs/smoke.yaml       # Ollama で smoke
 uv run forget-bench run configs/small.yaml       # 5セッション × 3シナリオ × 日英
+uv run forget-bench run configs/sweep_ollama.yaml   # 規模スイープ(5/20/50セッション)
+uv run forget-bench estimate configs/sweep_claude.yaml  # LLMを呼ばずにリクエスト数を見積もる
+uv run forget-bench probe-claude                 # claude バックエンドの隔離を確認(4リクエスト)
 uv run forget-bench report runs/<run_id>         # 表を再表示
 uv run forget-bench scenario --seed 1000         # dev 分割のシナリオを1つ見る
 ```
@@ -89,7 +94,8 @@ forget-bench/
 ├── src/forget_bench/      # 実装
 │   ├── scenario/          #   シナリオ生成器(vocab.py が語彙・テンプレート、splits.py が dev/test 分割)
 │   ├── memory/            #   メモリ戦略プラグイン
-│   ├── backends/          #   LLMバックエンド(ollama / dummy)
+│   ├── backends/          #   LLMバックエンド(ollama / claude / dummy)
+│   ├── retrieval/         #   検索部品(埋め込み・BM25・順位融合)
 │   ├── scoring/           #   採点器と集計
 │   ├── prompts/           #   実験用プロンプト(全バックエンド共通)
 │   └── runner.py          #   実験ランナー
