@@ -12,6 +12,13 @@ class BackendError(RuntimeError):
     """バックエンド呼び出しの失敗(ランナーはこれを記録して次へ進む)。"""
 
 
+class BackendFatalError(RuntimeError):
+    """続けても無駄な失敗(利用枠切れ・認証失敗など)。BackendError ではないので、ランナーは実行を止める。
+
+    途中までのログとレスポンスキャッシュは残るので、--reuse-cache で続きから再実行できる。
+    """
+
+
 @runtime_checkable
 class Backend(Protocol):
     name: str
