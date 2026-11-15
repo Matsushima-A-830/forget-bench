@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+.pytest_cache/
+
+# 実験出力(要約は results/ に手で残す)
+runs/
+
+# 秘密情報
+.env
+.env.*
+
+# モデル・キャッシュ
+*.safetensors
+*.gguf
+.cache/
