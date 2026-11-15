@@ -37,16 +37,27 @@ def _fmt(v: Any, kind: str) -> str:
     return str(v)
 
 
+def _cell(m: dict[str, Any], key: str, kind: str) -> str:
+    text = _fmt(m.get(key), kind)
+    rng = m.get(f"range_{key}")
+    if kind == "pct" and rng:
+        text += f" ({100 * rng[0]:.0f}–{100 * rng[1]:.0f})"
+    return text
+
+
 def render_summary_markdown(run_id: str, metrics: list[dict[str, Any]]) -> str:
     lines = [f"# {run_id}", ""]
-    for lang in sorted({str(m["lang"]) for m in metrics}):
-        rows = [m for m in metrics if m["lang"] == lang]
+    if any(m.get("n_repeats", 1) > 1 for m in metrics):
+        lines += ["繰り返しがある指標は「全繰り返しの平均 (繰り返しごとの最小–最大)」。", ""]
+    groups = sorted({(str(m["lang"]), int(m.get("sessions", 0))) for m in metrics})
+    for lang, sessions in groups:
+        rows = [m for m in metrics if m["lang"] == lang and int(m.get("sessions", 0)) == sessions]
         n_q = {m["strategy"]: m["n_questions"] for m in rows}
-        lines += [f"## lang={lang}", "", f"質問数(戦略ごと): {n_q}", ""]
+        lines += [f"## lang={lang}, sessions={sessions}", "", f"質問数(戦略ごと、全繰り返し): {n_q}", ""]
         lines.append("| " + " | ".join(h for h, _, _ in _COLUMNS) + " |")
         lines.append("|" + "|".join("---" for _ in _COLUMNS) + "|")
         for m in rows:
-            lines.append("| " + " | ".join(_fmt(m.get(k), f) for _, k, f in _COLUMNS) + " |")
+            lines.append("| " + " | ".join(_cell(m, k, f) for _, k, f in _COLUMNS) + " |")
         lines.append("")
     return "\n".join(lines)
 

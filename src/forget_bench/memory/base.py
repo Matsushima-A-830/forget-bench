@@ -57,7 +57,16 @@ def available_strategies() -> list[str]:
     return sorted(_REGISTRY)
 
 
-def estimate_memory_calls(name: str, n_user_turns: int, params: dict[str, Any]) -> int:
+@dataclass(frozen=True)
+class ScenarioShape:
+    """見積もりに使うシナリオの形(LLMを呼ばずに生成器から数える)。"""
+
+    n_user_turns: int
+    n_sessions: int
+    n_forget: int
+
+
+def estimate_memory_calls(name: str, shape: ScenarioShape, params: dict[str, Any]) -> int:
     """メモリ構築のLLM呼び出し数の見積もり。戦略クラスが estimate_memory_calls を持っていればそれを使う。"""
     fn = getattr(_REGISTRY[name], "estimate_memory_calls", None)
-    return int(fn(n_user_turns, **params)) if callable(fn) else 0
+    return int(fn(shape, **params)) if callable(fn) else 0
