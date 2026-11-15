@@ -1,0 +1,38 @@
+[project]
+name = "forget-bench"
+version = "0.1.0"
+description = "メモリ戦略ごとの「覚える力・忘れる力・コスト」を正解付きシナリオで比較する実験基盤"
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+dependencies = [
+    "httpx>=0.27",
+    "pydantic>=2.7",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+# KV層(第3週)。RTX 50系(sm_120)には CUDA 12.8 ビルドの torch が必要。
+hf = [
+    "torch>=2.8",
+    "transformers>=4.50",
+]
+
+[project.scripts]
+forget-bench = "forget_bench.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/forget_bench"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
