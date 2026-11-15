@@ -143,3 +143,15 @@ def test_fatal_error_stops_run(tmp_path: Path, monkeypatch) -> None:  # noqa: AN
         meta = json.loads((d / "meta.json").read_text())
         assert meta["status"] == "failed" and "quota" in meta["error"]
         calls["n"] = 0
+
+
+def test_report_from_logs_matches_summary(tmp_path: Path) -> None:
+    from forget_bench.report import metrics_from_logs, render_by_scale
+
+    out = run(_write(tmp_path, SWEEP), out_root=tmp_path / "runs")
+    summary = json.loads((out / "summary.json").read_text())["metrics"]
+    assert metrics_from_logs(out) == summary
+    table = render_by_scale(summary)
+    assert "| full | 2 |" in table and "| full | 3 |" in table
+    one = metrics_from_logs(out, {"dev-1000-ja-s2"})
+    assert {m["sessions"] for m in one} == {2}

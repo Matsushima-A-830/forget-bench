@@ -7,7 +7,7 @@
 - [x] GitHubリモート作成(公開リポジトリ)・main保護設定(PR必須・管理者にも適用・force push/削除禁止、承認数0)
 - [x] ライセンス決定(MIT)
 
-## 第1週: 基盤 + テキスト層(ローカル) ← いまここ
+## 第1週: 基盤 + テキスト層(ローカル)
 
 - [x] `pyproject.toml`(uv)、パッケージ骨格、pytest
 - [x] シナリオ生成器(日英、規模パラメータ、dev/test分割)+ 決定性テスト
@@ -18,12 +18,13 @@
 - 完了条件: `qwen2.5:7b-instruct` で smoke → 小規模(5セッション)の表が出る
   - 2026-11-15 達成: results/2026-11-15-week1-small.md
 
-## 第2週: テキスト層の完成 + Claude
+## 第2週: テキスト層の完成 + Claude ← いまここ
 
-- [ ] `claude` バックエンド + docs/backends.md の未確認事項の確認
-- [ ] 戦略: `full_redact`, `summary`, `rag`, `hybrid`
-- [ ] 規模スイープ(5/20/50セッション)を ollama で実行
+- [x] `claude` バックエンド + docs/backends.md の未確認事項の確認
+- [x] 戦略: `full_redact`, `summary`, `rag`, `hybrid`
+- [x] 規模スイープ(5/20/50セッション)を ollama で実行(results/2026-11-15-week2-sweep.md)
 - [ ] Claude で同じスイープ(利用枠を見積もってから)
+  - 2026-11-15: フル設計(12,426リクエスト)で開始し、1,110リクエストで5時間枠に達して停止。規模を決め直して `--reuse-cache` で再開する
 
 ## 第3週: KV層(hf)
 
