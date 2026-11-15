@@ -1,21 +1,22 @@
 # ロードマップ(LT: 2026年12月中旬予定)
 
-## 第0週(2026-11-15〜): 事前準備 ← いまここ
+## 第0週(2026-11-15〜): 事前準備
 
 - [x] リポジトリ作成、README / AGENTS.md / CLAUDE.md / docs 整備
 - [x] 環境チェックスクリプト(`scripts/check_env.sh`)
 - [x] GitHubリモート作成(公開リポジトリ)・main保護設定(PR必須・管理者にも適用・force push/削除禁止、承認数0)
 - [x] ライセンス決定(MIT)
 
-## 第1週: 基盤 + テキスト層(ローカル)
+## 第1週: 基盤 + テキスト層(ローカル) ← いまここ
 
-- [ ] `pyproject.toml`(uv)、パッケージ骨格、pytest
-- [ ] シナリオ生成器(日英、規模パラメータ、dev/test分割)+ 決定性テスト
-- [ ] 採点器(正規化+一致、漏洩判定)+ テスト
-- [ ] `ollama` バックエンド
-- [ ] 戦略: `full`, `window`, `facts_append`
-- [ ] ランナー + `runs/` 出力 + smoke設定
+- [x] `pyproject.toml`(uv)、パッケージ骨格、pytest
+- [x] シナリオ生成器(日英、規模パラメータ、dev/test分割)+ 決定性テスト
+- [x] 採点器(正規化+一致、漏洩判定)+ テスト
+- [x] `ollama` バックエンド
+- [x] 戦略: `full`, `window`, `facts_append`
+- [x] ランナー + `runs/` 出力 + smoke設定
 - 完了条件: `qwen2.5:7b-instruct` で smoke → 小規模(5セッション)の表が出る
+  - 2026-11-15 達成: results/2026-11-15-week1-small.md
 
 ## 第2週: テキスト層の完成 + Claude
 
