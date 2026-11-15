@@ -106,6 +106,9 @@ class RunConfig(_Strict):
     repeats: int = Field(default=1, ge=1)
     # 見積もりリクエスト数の上限。超える設定は実行前に止める(利用枠のあるバックエンド用)。
     max_requests: int | None = None
+    # (シナリオ × 戦略 × 繰り返し)の単位を何並列で回すか。利用枠は減らないが、待ち時間が減る。
+    # ollama は1つのGPUで処理するので 1 のままにする(並列にしても速くならず、レイテンシの比較が壊れる)。
+    concurrency: int = Field(default=1, ge=1)
     # rag / hybrid の検索器(回答バックエンドによらず共通)
     retrieval: RetrievalConfig = RetrievalConfig()
 

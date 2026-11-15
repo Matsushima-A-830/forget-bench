@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import math
+import threading
 from collections.abc import Callable
 from typing import Any, Protocol, runtime_checkable
 
@@ -56,19 +57,21 @@ def _normalize(v: list[float]) -> list[float]:
 class _Memo:
     def __init__(self) -> None:
         self.memo: dict[str, list[float]] = {}
+        self._lock = threading.Lock()
         self.calls = 0
         self.texts = 0
         self.memo_hits = 0
 
     def embed(self, texts: list[str]) -> list[list[float]]:
-        missing = list(dict.fromkeys(t for t in texts if t not in self.memo))
-        self.memo_hits += len(texts) - len(missing)
-        if missing:
-            self.calls += 1
-            self.texts += len(missing)
-            for t, v in zip(missing, self._embed(missing)):
-                self.memo[t] = _normalize(v)
-        return [self.memo[t] for t in texts]
+        with self._lock:  # 並列実行時も同じ文を二度埋め込まない
+            missing = list(dict.fromkeys(t for t in texts if t not in self.memo))
+            self.memo_hits += len(texts) - len(missing)
+            if missing:
+                self.calls += 1
+                self.texts += len(missing)
+                for t, v in zip(missing, self._embed(missing)):
+                    self.memo[t] = _normalize(v)
+            return [self.memo[t] for t in texts]
 
     def _embed(self, texts: list[str]) -> list[list[float]]:
         raise NotImplementedError

@@ -103,3 +103,43 @@ def test_max_requests_stops_before_running(tmp_path: Path) -> None:
     est = estimate_requests(RunConfig.model_validate(data))
     out = run(_write(tmp_path, data), out_root=tmp_path / "runs", max_requests=est["total"])
     assert out.exists()
+
+
+def test_concurrency_gives_same_scores(tmp_path: Path) -> None:
+    seq = run(_write(tmp_path, SWEEP), out_root=tmp_path / "seq")
+    par = run(_write(tmp_path, dict(SWEEP, concurrency=4)), out_root=tmp_path / "par")
+
+    def key(d: Path) -> list[str]:
+        return sorted((d / "scores.jsonl").read_text().splitlines())
+
+    assert key(seq) == key(par)
+    assert json.loads((par / "meta.json").read_text())["n_requests"] == json.loads((seq / "meta.json").read_text())["n_requests"]
+    def metrics(d: Path) -> list[dict]:
+        # レイテンシ(実測の時間)以外は一致する
+        return [{k: v for k, v in m.items() if "latency" not in k and "ttft" not in k}
+                for m in json.loads((d / "summary.json").read_text())["metrics"]]
+
+    assert metrics(seq) == metrics(par)
+
+
+def test_fatal_error_stops_run(tmp_path: Path, monkeypatch) -> None:  # noqa: ANN001
+    from forget_bench.backends import BackendFatalError
+    from forget_bench.backends.dummy import DummyBackend
+
+    calls = {"n": 0}
+
+    def boom(self, messages, *, max_tokens, temperature=0.0):  # noqa: ANN001, ANN202
+        calls["n"] += 1
+        if calls["n"] > 5:
+            raise BackendFatalError("quota")
+        return DummyBackend.__dict__["_orig"](self, messages, max_tokens=max_tokens, temperature=temperature)
+
+    monkeypatch.setattr(DummyBackend, "_orig", DummyBackend.generate, raising=False)
+    monkeypatch.setattr(DummyBackend, "generate", boom)
+    for conc in (1, 3):
+        with pytest.raises(BackendFatalError):
+            run(_write(tmp_path, dict(SWEEP, concurrency=conc)), out_root=tmp_path / f"f{conc}")
+        (d,) = (tmp_path / f"f{conc}").iterdir()
+        meta = json.loads((d / "meta.json").read_text())
+        assert meta["status"] == "failed" and "quota" in meta["error"]
+        calls["n"] = 0

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import threading
 from collections.abc import Callable
 from dataclasses import asdict, dataclass, replace
 from pathlib import Path
@@ -43,6 +44,7 @@ class ResponseCache:
             write_dir.mkdir(parents=True, exist_ok=True)
         self.hits = 0
         self.misses = 0
+        self._lock = threading.Lock()
 
     def key(self, messages: list[Message], max_tokens: int, temperature: float, repeat: int) -> str:
         payload = json.dumps(
@@ -63,16 +65,18 @@ class ResponseCache:
             path = d / f"{key}.json"
             if path.exists():
                 data = json.loads(path.read_text(encoding="utf-8"))
-                self.hits += 1
+                with self._lock:
+                    self.hits += 1
                 return Generation(**data["generation"])
-        self.misses += 1
+        with self._lock:
+            self.misses += 1
         return None
 
     def put(self, key: str, gen: Generation) -> None:
         if self.write_dir is None:
             return
         path = self.write_dir / f"{key}.json"
-        tmp = path.with_suffix(".tmp")
+        tmp = path.with_suffix(f".{threading.get_ident()}.tmp")
         tmp.write_text(json.dumps({"namespace": self.namespace, "generation": asdict(gen)}, ensure_ascii=False), encoding="utf-8")
         tmp.replace(path)
 

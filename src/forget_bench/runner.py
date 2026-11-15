@@ -9,8 +9,10 @@ import json
 import platform
 import subprocess
 import sys
+import threading
 import time
 import traceback
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, is_dataclass
 from datetime import datetime
 from importlib import metadata
@@ -227,6 +229,7 @@ def run(
         "split": cfg.scenario.split,
         "request_estimate": estimate,
         "max_requests": limit,
+        "concurrency": cfg.concurrency,
         "reuse_cache": [str(d) for d in read_dirs],
         **_environment(),
     }
@@ -245,9 +248,12 @@ def run(
     request_rows: list[RequestRow] = []
     score_rows: list[ScoreRow] = []
 
+    lock = threading.Lock()
+
     def sink(row: RequestRow) -> None:
-        request_rows.append(row)
-        requests_w.write(row)
+        with lock:
+            request_rows.append(row)
+            requests_w.write(row)
 
     embedder: Embedder | None = None
     try:
@@ -262,37 +268,58 @@ def run(
         write_meta()
 
         forget_counts: dict[str, int] = {}
-        total_units = len(scenarios) * len(cfg.strategies) * cfg.repeats
-        done = 0
-        t_start = time.perf_counter()
         for scenario in scenarios:
             forget_counts[scenario.id] = len(scenario.forget_requests)
             (out / "scenarios" / f"{scenario.id}.json").write_text(_dumps(scenario), encoding="utf-8")
-            for sc in cfg.strategies:
-                for repeat in range(cfg.repeats):
-                    rows, mem = run_scenario_strategy(
-                        scenario, sc.name, sc.display, sc.params, backend, cfg, sink,
-                        repeat=repeat, cache=cache, embedder=embedder,
-                    )
-                    for r in rows:
-                        scores_w.write(r)
-                    score_rows.extend(rows)
-                    memory_w.write(mem)
-                    done += 1
-                    progress = {
-                        "at": datetime.now().astimezone().isoformat(),
-                        "done": done, "total": total_units, "scenario_id": scenario.id,
-                        "strategy": sc.display, "repeat": repeat,
-                        "n_correct": sum(r.correct for r in rows), "n_questions": len(rows),
-                        "n_errors": sum(r.error is not None for r in rows),
-                        "n_requests": len(request_rows), "cache_hits": cache.hits,
-                        "elapsed_s": round(time.perf_counter() - t_start, 1),
-                    }
-                    progress_w.write(progress)
-                    print(f"[forget-bench] {done}/{total_units} {scenario.id} {sc.display} r{repeat}: "
-                          f"{progress['n_correct']}/{progress['n_questions']} correct, "
-                          f"{progress['n_errors']} errors, {progress['n_requests']} req "
-                          f"({cache.hits} cached) ({progress['elapsed_s']}s)", flush=True)
+        units = [(scenario, sc, repeat) for scenario in scenarios for sc in cfg.strategies for repeat in range(cfg.repeats)]
+        done = 0
+        t_start = time.perf_counter()
+
+        def run_unit(unit: tuple[Scenario, Any, int]) -> tuple[list[ScoreRow], dict[str, Any]]:
+            scenario, sc, repeat = unit
+            return run_scenario_strategy(
+                scenario, sc.name, sc.display, sc.params, backend, cfg, sink,
+                repeat=repeat, cache=cache, embedder=embedder,
+            )
+
+        def record(unit: tuple[Scenario, Any, int], rows: list[ScoreRow], mem: dict[str, Any]) -> None:
+            nonlocal done
+            scenario, sc, repeat = unit
+            with lock:
+                for r in rows:
+                    scores_w.write(r)
+                score_rows.extend(rows)
+                memory_w.write(mem)
+                done += 1
+                progress = {
+                    "at": datetime.now().astimezone().isoformat(),
+                    "done": done, "total": len(units), "scenario_id": scenario.id,
+                    "strategy": sc.display, "repeat": repeat,
+                    "n_correct": sum(r.correct for r in rows), "n_questions": len(rows),
+                    "n_errors": sum(r.error is not None for r in rows),
+                    "n_requests": len(request_rows), "cache_hits": cache.hits,
+                    "elapsed_s": round(time.perf_counter() - t_start, 1),
+                }
+                progress_w.write(progress)
+            print(f"[forget-bench] {done}/{len(units)} {scenario.id} {sc.display} r{repeat}: "
+                  f"{progress['n_correct']}/{progress['n_questions']} correct, "
+                  f"{progress['n_errors']} errors, {progress['n_requests']} req "
+                  f"({cache.hits} cached) ({progress['elapsed_s']}s)", flush=True)
+
+        if cfg.concurrency == 1:
+            for unit in units:
+                record(unit, *run_unit(unit))
+        else:
+            # 単位(シナリオ × 戦略 × 繰り返し)を並列に回す。1単位の中の呼び出しは順番どおり。
+            # 致命的なエラー(利用枠切れなど)が出たら、まだ始まっていない単位は取り消して止める。
+            with ThreadPoolExecutor(max_workers=cfg.concurrency) as pool:
+                futures = {pool.submit(run_unit, u): u for u in units}
+                try:
+                    for fut in as_completed(futures):
+                        record(futures[fut], *fut.result())
+                except BaseException:
+                    pool.shutdown(wait=True, cancel_futures=True)
+                    raise
 
         summary = summarize(score_rows, request_rows, forget_counts)
         (out / "summary.json").write_text(_dumps({"run_id": run_id, "metrics": summary}) + "\n", encoding="utf-8")
