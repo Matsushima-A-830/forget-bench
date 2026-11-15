@@ -1,0 +1,38 @@
+# 第2週: 規模スイープ(5/20/50セッション)× 日英 × dev 3シナリオ。ollama。
+# 事実抽出は claude と条件を揃えるためセッション単位(extract_every: session)。
+name: sweep-ollama
+backend:
+  name: ollama
+  params:
+    model: qwen2.5:7b-instruct
+    num_ctx: 32768   # qwen2.5 の上限。50セッションの full がこれを超えたら切り詰め検出でエラーになり、記録に残る
+    seed: 0
+generation:
+  max_tokens: 256
+  temperature: 0.0
+scenario:
+  langs: [ja, en]
+  split: dev
+  n_scenarios: 3
+  sessions: [5, 20, 50]
+  turns_per_session: [10, 20]
+  n_attributes: 4
+  max_changes: 4
+  n_oneshot: 3
+  n_sensitive: 3
+  n_forget: 2
+  aggregate_mentions: 4
+strategies:
+  - name: full
+  - name: full_redact
+  - name: window
+    params: {n_turns: 10}
+  - name: summary
+  - name: facts_append
+    params: {extract_every: session}
+  - name: facts_append
+    label: facts_append_oracle   # 抽出が完璧な場合の参照値(正解ラベルを使う)
+    params: {extractor: oracle}
+  - name: rag
+  - name: hybrid
+    params: {extract_every: session}

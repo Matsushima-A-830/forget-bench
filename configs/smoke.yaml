@@ -23,9 +23,17 @@ scenario:
   aggregate_mentions: 2
 strategies:
   - name: full
+  - name: full_redact
   - name: window
     params: {n_turns: 4}
+  - name: summary
   - name: facts_append
+  - name: facts_append
+    label: facts_append_session
+    params: {extract_every: session}
   - name: facts_append
     label: facts_append_oracle   # 抽出が完璧な場合の参照値(正解ラベルを使う)
     params: {extractor: oracle}
+  - name: rag
+  - name: hybrid
+    params: {extract_every: session}
