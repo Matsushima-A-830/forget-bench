@@ -42,6 +42,10 @@ cd "$(mktemp -d)" && claude -p \
 
 - HTTP API(`http://localhost:11434/api/chat`)を使う。`options.temperature=0`, `options.seed` 固定, `options.num_ctx` を明示。
 - **`num_ctx` を明示しないと既定値で文脈が切り詰められ、`full` 戦略が実質 `window` になる。** 実行前に必ず設定値とプロンプト長を照合する。
+  - 確認済み(Ollama 0.35.1, 2026-11-15): `num_ctx` を超えた入力は**エラーにならず黙って切り詰められる**(3236トークンの入力が `num_ctx=512` で `prompt_eval_count=258`)。
+    バックエンドは「`prompt_eval_count` が入力文字数/4 の9割未満」または「入力+`max_tokens` > `num_ctx`」のときエラーにする(`backends/ollama.py`)。
+  - 確認済み(同上): プレフィックスキャッシュが効いても `prompt_eval_count` は全入力トークン数を返す。短くなるのは `prompt_eval_duration` だけ。
+  - 最初の呼び出しはモデルのロード(約10秒)を含むので、ランナーは本番前に1回 warmup してロード時間をTTFTに混ぜない。
 - 返り値の `prompt_eval_count` / `eval_count` / `prompt_eval_duration` をトークン数・TTFTの近似に使う。
 - 使うモデル(このPCにpull済み): `qwen2.5:7b-instruct`, `qwen2.5:14b-instruct`。`qwen2.5:32b-instruct` は16GBに載り切らずCPUオフロードになるので、参考値扱い。
 - `meta.json` には `ollama show` で得たモデルのdigestと量子化レベルを記録する。
