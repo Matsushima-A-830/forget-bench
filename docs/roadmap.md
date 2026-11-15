@@ -4,7 +4,7 @@
 
 - [x] リポジトリ作成、README / AGENTS.md / CLAUDE.md / docs 整備
 - [x] 環境チェックスクリプト(`scripts/check_env.sh`)
-- [ ] GitHubリモート作成・main保護設定(人間が実施)
+- [x] GitHubリモート作成(公開リポジトリ)・main保護設定(PR必須・管理者にも適用・force push/削除禁止、承認数0)
 - [ ] ライセンス決定
 
 ## 第1週: 基盤 + テキスト層(ローカル)
