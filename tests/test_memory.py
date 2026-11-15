@@ -102,3 +102,21 @@ def test_parse_facts() -> None:
     assert parse_facts("[]") == []
     assert parse_facts("no json") is None
     assert parse_facts("[{broken") is None
+
+
+def test_full_redact_masks_only_forgotten_values() -> None:
+    for lang in ("ja", "en"):
+        sc = generate(1000, make_params(lang))
+        ctx = StrategyContext(lang, "SYSTEM", make_backend("dummy"), 256)
+        s = make_strategy("full_redact", ctx)
+        _feed(s, sc)
+        text = _context_text(s, sc)
+        assert not _leaks(text, sc)
+        assert ("[削除済み:" if lang == "ja" else "[deleted:") in text
+        assert s.stats().deleted_items == sum(len(r.source_turn_ids) for r in sc.forget_requests)
+        # 削除要求していない値は全部残る
+        forgotten = {r.fact_key for r in sc.forget_requests}
+        kept = [t.annotation.value for t in sc.turns if t.annotation and t.annotation.fact_key not in forgotten]
+        assert all(v in text for v in kept)
+        # ターン数は変わらない(伏字にするだけ)
+        assert s.stats().items == len(sc.turns)
