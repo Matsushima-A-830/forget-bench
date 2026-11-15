@@ -102,6 +102,11 @@ def test_parse_facts() -> None:
     assert parse_facts("[]") == []
     assert parse_facts("no json") is None
     assert parse_facts("[{broken") is None
+    # 複数の配列を改行で並べる・オブジェクトを1行ずつ書く(qwen2.5:7b の実際の出力形式)
+    two = '[{"turn": "t0", "key": "a", "value": "1"}]\n[{"turn": "t6", "key": "b", "value": "2"}]'
+    assert parse_facts(two) == [("a", "1"), ("b", "2")]
+    lines = '{"key": "a", "value": "1"}\n{"key": "b", "value": "2"}'
+    assert parse_facts(lines) == [("a", "1"), ("b", "2")]
 
 
 def test_full_redact_masks_only_forgotten_values() -> None:

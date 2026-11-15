@@ -14,7 +14,6 @@
 from __future__ import annotations
 
 import json
-import re
 from dataclasses import dataclass
 from typing import Any, Literal
 
@@ -51,19 +50,41 @@ def parse_facts(text: str) -> list[tuple[str, str]] | None:
     return None if items is None else [(k, v) for k, v, _ in items]
 
 
+def _json_values(text: str) -> list[object]:
+    """文字列中の JSON の値(配列・オブジェクト)を先頭から順にすべて取り出す。
+
+    モデルは1つの配列のほか、複数の配列を改行で並べたり、オブジェクトを1行ずつ書いたりする。
+    """
+    dec = json.JSONDecoder()
+    out: list[object] = []
+    i = 0
+    while i < len(text):
+        if text[i] in "[{":
+            try:
+                value, end = dec.raw_decode(text, i)
+            except json.JSONDecodeError:
+                i += 1
+                continue
+            out.append(value)
+            i = end
+        else:
+            i += 1
+    return out
+
+
 def parse_fact_items(text: str) -> list[tuple[str, str, str | None]] | None:
-    """(key, value, turn) のリスト。turn はまとめて抽出したときの発話ID(なければ None)。"""
-    m = re.search(r"\[.*\]", text, flags=re.S)
-    if not m:
+    """(key, value, turn) のリスト。turn はまとめて抽出したときの発話ID(なければ None)。
+
+    JSON が1つも見つからなければ None(パース失敗)。
+    """
+    values = _json_values(text)
+    if not values:
         return None
-    try:
-        data = json.loads(m.group(0))
-    except json.JSONDecodeError:
-        return None
-    if not isinstance(data, list):
-        return None
+    items: list[object] = []
+    for v in values:
+        items.extend(v if isinstance(v, list) else [v])
     out: list[tuple[str, str, str | None]] = []
-    for item in data:
+    for item in items:
         if isinstance(item, dict) and "key" in item and "value" in item:
             key, value = str(item["key"]).strip(), str(item["value"]).strip()
             turn = str(item["turn"]).strip() if item.get("turn") is not None else None
