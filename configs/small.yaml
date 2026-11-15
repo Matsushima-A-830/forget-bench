@@ -1,0 +1,31 @@
+# 第1週の完了条件: 小規模(5セッション)の表。dev 分割。
+name: small
+backend:
+  name: ollama
+  params:
+    model: qwen2.5:7b-instruct
+    num_ctx: 16384
+    seed: 0
+generation:
+  max_tokens: 256
+  temperature: 0.0
+scenario:
+  langs: [ja, en]
+  split: dev
+  n_scenarios: 3
+  sessions: 5
+  turns_per_session: [10, 20]
+  n_attributes: 4
+  max_changes: 4
+  n_oneshot: 3
+  n_sensitive: 3
+  n_forget: 2
+  aggregate_mentions: 4
+strategies:
+  - name: full
+  - name: window
+    params: {n_turns: 10}
+  - name: facts_append
+  - name: facts_append
+    label: facts_append_oracle   # 抽出が完璧な場合の参照値(正解ラベルを使う)
+    params: {extractor: oracle}

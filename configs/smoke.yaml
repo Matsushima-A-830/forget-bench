@@ -1,0 +1,31 @@
+# 全経路を通すための最小設定(1シナリオ・数問)。本実験の前に必ず1回通す。
+name: smoke
+backend:
+  name: ollama
+  params:
+    model: qwen2.5:7b-instruct
+    num_ctx: 8192
+    seed: 0
+generation:
+  max_tokens: 256
+  temperature: 0.0
+scenario:
+  langs: [ja]
+  split: dev
+  n_scenarios: 1
+  sessions: 2
+  turns_per_session: [6, 8]
+  n_attributes: 2
+  max_changes: 2
+  n_oneshot: 1
+  n_sensitive: 2
+  n_forget: 1
+  aggregate_mentions: 2
+strategies:
+  - name: full
+  - name: window
+    params: {n_turns: 4}
+  - name: facts_append
+  - name: facts_append
+    label: facts_append_oracle   # 抽出が完璧な場合の参照値(正解ラベルを使う)
+    params: {extractor: oracle}

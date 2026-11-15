@@ -10,8 +10,20 @@ LLMエージェントの**メモリ戦略**(要約・追記・RAG・KVキャッ�
 クラウドLLM(Claude、`claude -p` 経由)とローカルLLM(Ollama / Hugging Face transformers)の両方で動かし、
 「テキストを操作するメモリ」と「推論中のKVキャッシュそのものを操作するメモリ」を同じ物差しで測る。
 
-> ステータス: **事前準備段階(実装前)**。現時点ではドキュメントと環境チェックスクリプトのみ。
-> 進め方は [docs/roadmap.md](docs/roadmap.md) を参照。
+> ステータス: **第1週(基盤 + テキスト層・ローカル)を実装中**。シナリオ生成器・採点器・`ollama` バックエンド・
+> 戦略 `full` / `window` / `facts_append` とランナーが動く。進め方は [docs/roadmap.md](docs/roadmap.md) を参照。
+
+## 使い方
+
+```bash
+uv sync                                          # 依存インストール(テキスト層のみ)
+uv run pytest                                    # テスト(LLM不要)
+uv run forget-bench run configs/smoke.yaml --backend dummy   # LLMなしで全経路を通す
+uv run forget-bench run configs/smoke.yaml       # Ollama で smoke
+uv run forget-bench run configs/small.yaml       # 5セッション × 3シナリオ × 日英
+uv run forget-bench report runs/<run_id>         # 表を再表示
+uv run forget-bench scenario --seed 1000         # dev 分割のシナリオを1つ見る
+```
 
 ## 何を測るか
 
@@ -74,13 +86,14 @@ forget-bench/
 │   ├── roadmap.md         # 4週間の計画
 │   └── prior-work.md      # 下敷きにした過去の検証(ai-100days)と出典
 ├── scripts/check_env.sh   # 環境チェック
-├── src/forget_bench/      # (第1週〜)実装
-│   ├── scenario/          #   シナリオ生成器
+├── src/forget_bench/      # 実装
+│   ├── scenario/          #   シナリオ生成器(vocab.py が語彙・テンプレート、splits.py が dev/test 分割)
 │   ├── memory/            #   メモリ戦略プラグイン
-│   ├── backends/          #   LLMバックエンド
-│   ├── scoring/           #   採点器
+│   ├── backends/          #   LLMバックエンド(ollama / dummy)
+│   ├── scoring/           #   採点器と集計
+│   ├── prompts/           #   実験用プロンプト(全バックエンド共通)
 │   └── runner.py          #   実験ランナー
-├── configs/               # (第1週〜)実験設定(YAML)
+├── configs/               # 実験設定(YAML)
 ├── tests/
 └── runs/                  # 実験出力(git管理外。要約だけ results/ に残す)
 ```
