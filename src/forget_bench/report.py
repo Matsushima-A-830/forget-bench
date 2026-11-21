@@ -65,3 +65,72 @@ def render_summary_markdown(run_id: str, metrics: list[dict[str, Any]]) -> str:
 def report(run_dir: str | Path) -> str:
     data = json.loads((Path(run_dir) / "summary.json").read_text(encoding="utf-8"))
     return render_summary_markdown(data["run_id"], data["metrics"])
+
+
+_PIVOT_ORDER = ("full", "full_redact", "window", "summary", "facts_append", "rag", "hybrid", "facts_append_oracle")
+_PIVOT_COLS: tuple[tuple[str, str], ...] = (
+    ("current", "acc_current"), ("historical", "acc_historical"), ("oneshot", "acc_oneshot"),
+    ("aggregate", "acc_aggregate"), ("leak/request", "leak_rate_requests"), ("leak/answer", "leak_rate_answers"),
+    ("over-forget", "over_forget_rate"),
+)
+
+
+def _pct(m: dict[str, Any], key: str) -> str:
+    v = m.get(key)
+    if v is None:
+        return "—"
+    text = f"{100 * float(v):.0f}"
+    rng = m.get(f"range_{key}")
+    if rng:
+        text += f" ({100 * rng[0]:.0f}–{100 * rng[1]:.0f})"
+    return text
+
+
+def render_by_scale(metrics: list[dict[str, Any]]) -> str:
+    """言語ごとに「戦略 × 規模」の1枚の表にする(結果メモ用)。値は %、括弧は繰り返し間の範囲。"""
+    lines: list[str] = []
+    strategies = sorted({str(m["strategy"]) for m in metrics},
+                        key=lambda s: (_PIVOT_ORDER.index(s) if s in _PIVOT_ORDER else len(_PIVOT_ORDER), s))
+    for lang in sorted({str(m["lang"]) for m in metrics}):
+        lines += [f"#### lang={lang}", ""]
+        lines.append("| strategy | sessions | " + " | ".join(c for c, _ in _PIVOT_COLS)
+                     + " | in-tok/answer | in-tok memory | errors |")
+        lines.append("|---|---:|" + "---:|" * (len(_PIVOT_COLS) + 3))
+        for st in strategies:
+            rows = sorted((m for m in metrics if m["lang"] == lang and m["strategy"] == st),
+                          key=lambda m: int(m.get("sessions", 0)))
+            for m in rows:
+                calls = int(m.get("answer_calls") or 0)
+                mean_in = int(m.get("answer_input_tokens") or 0) / calls if calls else 0
+                lines.append(f"| {st} | {m.get('sessions')} | " + " | ".join(_pct(m, k) for _, k in _PIVOT_COLS)
+                             + f" | {mean_in:,.0f} | {int(m.get('memory_input_tokens') or 0):,} | {m.get('n_errors')} |")
+        lines.append("")
+    return "\n".join(lines)
+
+
+def metrics_from_logs(run_dir: str | Path, scenarios: set[str] | None = None) -> list[dict[str, Any]]:
+    """scores.jsonl / requests.jsonl から集計し直す(途中で止まった run や、シナリオを絞った集計用)。
+
+    完了していない(シナリオ × 戦略 × 繰り返し)の単位は、progress.jsonl に載っていないので除く。
+    """
+    from forget_bench.scoring.summary import RequestRow, ScoreRow, row_from_dict, summarize
+
+    run_dir = Path(run_dir)
+
+    def jsonl(name: str) -> list[dict[str, Any]]:
+        path = run_dir / name
+        return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines()] if path.exists() else []
+
+    done = {(p["scenario_id"], p["strategy"], p.get("repeat", 0)) for p in jsonl("progress.jsonl")}
+
+    def keep(d: dict[str, Any]) -> bool:
+        unit = (d["scenario_id"], d["strategy"], d.get("repeat", 0))
+        return unit in done and (scenarios is None or d["scenario_id"] in scenarios)
+
+    scores = [row_from_dict(ScoreRow, d) for d in jsonl("scores.jsonl") if keep(d)]
+    requests = [row_from_dict(RequestRow, d) for d in jsonl("requests.jsonl") if keep(d)]
+    forget_counts: dict[str, int] = {}
+    for path in (run_dir / "scenarios").glob("*.json"):
+        sc = json.loads(path.read_text(encoding="utf-8"))
+        forget_counts[sc["id"]] = len(sc["forget_requests"])
+    return summarize(scores, requests, forget_counts)

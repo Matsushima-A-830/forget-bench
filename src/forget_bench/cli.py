@@ -36,6 +36,10 @@ def main(argv: list[str] | None = None) -> int:
 
     pp = sub.add_parser("report", help="runs/<run_id> の表を表示する")
     pp.add_argument("run_dir")
+    pp.add_argument("--by-scale", action="store_true", help="言語ごとに「戦略 × 規模」の1枚の表にする")
+    pp.add_argument("--from-logs", action="store_true",
+                    help="summary.json ではなく生ログから集計する(途中で止まった run 用。完了した単位だけ)")
+    pp.add_argument("--scenarios", default=None, help="集計するシナリオIDをカンマ区切りで絞る(--from-logs と併用)")
 
     ps = sub.add_parser("scenario", help="シナリオを1つ生成してJSONで表示する(dev分割のみ)")
     ps.add_argument("--seed", type=int, required=True)
@@ -64,7 +68,16 @@ def main(argv: list[str] | None = None) -> int:
         cfg, _ = load_config(args.config)
         print(json.dumps(estimate_requests(cfg), ensure_ascii=False))
     elif args.cmd == "report":
-        print(report(args.run_dir))
+        from pathlib import Path
+
+        from forget_bench.report import metrics_from_logs, render_by_scale, render_summary_markdown
+
+        if args.from_logs or args.scenarios:
+            wanted = set(args.scenarios.split(",")) if args.scenarios else None
+            metrics = metrics_from_logs(args.run_dir, wanted)
+        else:
+            metrics = json.loads((Path(args.run_dir) / "summary.json").read_text(encoding="utf-8"))["metrics"]
+        print(render_by_scale(metrics) if args.by_scale else render_summary_markdown(Path(args.run_dir).name, metrics))
     elif args.cmd == "scenario":
         if split_of(args.seed) != "dev":
             # test 分割の中身を見ながらプロンプトを調整しないため(AGENTS.md 絶対ルール4)
