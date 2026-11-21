@@ -75,6 +75,21 @@
   LLMの生成呼び出しではないので `requests.jsonl` には載せず、呼び出し数を `meta.json` の `embedder_stats` に記録する。
 - `facts_append(extractor=oracle)` は正解ラベルで抽出する参照値。戦略の比較には混ぜず、別の行として示す。
 
+### KV 層の実装(第3週)
+
+| 戦略 | パラメータ | 忘れ方の実装 |
+|---|---|---|
+| `kv_full` | — | 何もしない |
+| `kv_drop` | — | 削除要求の値を含む発話の範囲を切除。位置補正なし(後続のキーは元の位置の回転のまま、位置は詰める) |
+| `kv_drop_repos` | — | 同じ範囲を切除し、後続のキーを切除した数だけ RoPE で巻き戻す |
+| `kv_evict_old` | `max_sessions`(既定 2) | 新しいセッションが始まると、直近 `max_sessions` より古いセッションを丸ごと drop+repos。削除要求は無視 |
+
+- 発話1つを1つのトークン範囲として積む。整形(システムプロンプト、セッション見出し、ChatML)はテキスト層と同じなので、
+  `kv_full` はテキスト層の `full` を hf で回したときと同じトークン列になる。
+- 切除の対象は `full_redact` と同じ(削除要求の source_turn_ids と、値を含む発話)。テキストを書き換えるのではなく、KV を切り取る。
+- 切除より後に追記した発話は詰めた位置で prefill されるので、naive drop と drop+repos の違いは
+  「切除範囲の後ろにあり、切除の時点ですでにキャッシュにあった」発話のキーだけに出る。
+
 ## 3. 評価指標
 
 - `acc_current`, `acc_historical`, `acc_oneshot`, `acc_aggregate`
