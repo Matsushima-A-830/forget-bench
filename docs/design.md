@@ -61,6 +61,20 @@
 
 `summary` と `facts_append`(抽出をLLMで行う場合)は、メモリ構築自体にLLM呼び出しが入る。そのコストも計上する。
 
+### 実装上の選択(第2週)
+
+| 戦略 | パラメータ | 既定 | 補足 |
+|---|---|---|---|
+| `window` | `n_turns` | 10 | ユーザー発話の回数で数える(応答も一緒に残す) |
+| `summary` | `update_every` | `session` | セッションの区切りで要約を更新。削除要求では「溜めた分の反映」と「削除指示」で2回呼ぶ |
+| `facts_append` | `extractor` / `extract_every` | `llm` / `turn` | `session` にするとセッション内の発話をまとめて1回で抽出(呼び出し数=セッション数)。スイープは両バックエンドとも `session` |
+| `rag` | `top_k` / `mode` | 8 / `dense` | `mode`: `dense`(bge-m3)/ `bm25` / `fusion`(RRF)。dev 分割の検索再現率で `dense` を既定にした(`memory/rag.py`) |
+| `hybrid` | facts と rag のパラメータ | — | 文脈に事実ストアと検索結果の両方を入れ、削除要求は両方に適用 |
+
+- 検索器(埋め込み・BM25)は回答バックエンドによらず共通にする。`claude` で回答する場合も埋め込みはローカルの bge-m3。
+  LLMの生成呼び出しではないので `requests.jsonl` には載せず、呼び出し数を `meta.json` の `embedder_stats` に記録する。
+- `facts_append(extractor=oracle)` は正解ラベルで抽出する参照値。戦略の比較には混ぜず、別の行として示す。
+
 ## 3. 評価指標
 
 - `acc_current`, `acc_historical`, `acc_oneshot`, `acc_aggregate`

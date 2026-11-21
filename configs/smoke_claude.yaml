@@ -1,0 +1,40 @@
+# claude バックエンドの smoke(本実験の前に必ず1回通す。CLAUDE.md「利用枠」)。
+# 1シナリオ × 全戦略。見積もりは `forget-bench estimate configs/smoke_claude.yaml` で確認する。
+name: smoke-claude
+backend:
+  name: claude
+  params:
+    model: claude-opus-5-5
+    effort: low
+    auth: token
+generation:
+  max_tokens: 256
+  temperature: 0.0
+scenario:
+  langs: [ja]
+  split: dev
+  n_scenarios: 1
+  sessions: 2
+  turns_per_session: [6, 8]
+  n_attributes: 2
+  max_changes: 2
+  n_oneshot: 1
+  n_sensitive: 2
+  n_forget: 1
+  aggregate_mentions: 2
+strategies:
+  - name: full
+  - name: full_redact
+  - name: window
+    params: {n_turns: 4}
+  - name: summary
+  - name: facts_append
+    params: {extract_every: session}
+  - name: facts_append
+    label: facts_append_oracle
+    params: {extractor: oracle}
+  - name: rag
+  - name: hybrid
+    params: {extract_every: session}
+concurrency: 4
+max_requests: 100
