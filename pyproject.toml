@@ -12,10 +12,12 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# KV層(第3週)。RTX 50系(sm_120)には CUDA 12.8 ビルドの torch が必要。
+# KV層(第3週)。RTX 50系(sm_120)には CUDA 12.8 以降のビルドの torch が必要。
+# 下限は Day 025(ai-100days)で drop/repos を確認した版(DynamicCache.layers[].keys/values を直接操作する)。
 hf = [
-    "torch>=2.8",
-    "transformers>=4.50",
+    "torch>=2.14",
+    "transformers>=5.20",
+    "accelerate>=1.0",
 ]
 
 [project.scripts]
