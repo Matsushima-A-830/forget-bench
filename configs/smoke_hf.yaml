@@ -1,0 +1,42 @@
+# hf バックエンド(KV層)の smoke。GPU を使う前に nvidia-smi で空きを確認し、Ollama のモデルを降ろす(CLAUDE.md)。
+name: smoke-hf
+backend:
+  name: hf
+  params:
+    model: Qwen/Qwen2.5-3B-Instruct
+    dtype: bfloat16
+    attn_implementation: eager
+generation:
+  max_tokens: 256
+  temperature: 0.0
+scenario:
+  langs: [ja]
+  split: dev
+  n_scenarios: 1
+  sessions: 2
+  turns_per_session: [6, 8]
+  n_attributes: 2
+  max_changes: 2
+  n_oneshot: 1
+  n_sensitive: 2
+  n_forget: 1
+  aggregate_mentions: 2
+strategies:
+  - name: full
+  - name: full_redact
+  - name: window
+    params: {n_turns: 4}
+  - name: summary
+  - name: facts_append
+    params: {extract_every: session}
+  - name: facts_append
+    label: facts_append_oracle
+    params: {extractor: oracle}
+  - name: rag
+  - name: hybrid
+    params: {extract_every: session}
+  - name: kv_full
+  - name: kv_drop
+  - name: kv_drop_repos
+  - name: kv_evict_old
+    params: {max_sessions: 1}
