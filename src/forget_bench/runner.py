@@ -23,6 +23,7 @@ from forget_bench.config import RunConfig, load_config
 from forget_bench.memory import StrategyContext, make_strategy
 from forget_bench.memory.base import ScenarioShape, estimate_memory_calls
 from forget_bench.prompts import load_prompt
+from forget_bench.retrieval import Embedder, make_embedder
 from forget_bench.report import render_summary_markdown
 from forget_bench.scenario import generate
 from forget_bench.scoring import score_answer
@@ -128,6 +129,7 @@ def run_scenario_strategy(
     *,
     repeat: int = 0,
     cache: ResponseCache | None = None,
+    embedder: Embedder | None = None,
 ) -> tuple[list[ScoreRow], dict[str, Any]]:
     lang = scenario.params.lang
     sessions = scenario.params.sessions
@@ -138,6 +140,7 @@ def run_scenario_strategy(
         system_prompt=load_prompt("system", lang),
         llm=metered,
         max_tokens=cfg.generation.max_tokens,
+        embedder=embedder,
     )
     strategy = make_strategy(strategy_name, ctx, **strategy_params)
 
@@ -246,12 +249,16 @@ def run(
         request_rows.append(row)
         requests_w.write(row)
 
+    embedder: Embedder | None = None
     try:
         backend = make_backend(cfg.backend.name, **cfg.backend.params)
         warmup = getattr(backend, "warmup", None)
         if callable(warmup):
             warmup()
         meta["backend"] = backend.info()
+        emb_cfg = cfg.retrieval.embedder
+        embedder = make_embedder(emb_cfg.name, **emb_cfg.params)
+        meta["embedder"] = embedder.info()
         write_meta()
 
         forget_counts: dict[str, int] = {}
@@ -264,7 +271,8 @@ def run(
             for sc in cfg.strategies:
                 for repeat in range(cfg.repeats):
                     rows, mem = run_scenario_strategy(
-                        scenario, sc.name, sc.display, sc.params, backend, cfg, sink, repeat=repeat, cache=cache
+                        scenario, sc.name, sc.display, sc.params, backend, cfg, sink,
+                        repeat=repeat, cache=cache, embedder=embedder,
                     )
                     for r in rows:
                         scores_w.write(r)
@@ -300,6 +308,8 @@ def run(
         meta["n_requests"] = len(request_rows)
         meta["n_cache_hits"] = cache.hits
         meta["n_backend_calls"] = len(request_rows) - cache.hits
+        if embedder is not None:
+            meta["embedder_stats"] = embedder.stats()
         write_meta()
         for w in (requests_w, scores_w, progress_w, memory_w):
             w.close()

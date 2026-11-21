@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import Any, Protocol, runtime_checkable
 
 from forget_bench.backends.base import Backend
+from forget_bench.retrieval.embedder import Embedder
 from forget_bench.types import ForgetRequest, Lang, MemoryStats, Message, Question, Turn
 
 
@@ -18,6 +19,7 @@ class StrategyContext:
     system_prompt: str
     llm: Backend  # メモリ構築用。回答用と同じバックエンドを、記録用ラッパー越しに渡す
     max_tokens: int
+    embedder: Embedder | None = None  # 検索を使う戦略用(全バックエンド共通の検索器)
 
 
 @runtime_checkable

@@ -15,6 +15,7 @@ CONFIG = {
     "scenario": {"langs": ["ja", "en"], "split": "dev", "n_scenarios": 2, "sessions": 2,
                  "turns_per_session": [6, 8], "n_attributes": 2, "max_changes": 2, "n_oneshot": 1,
                  "n_sensitive": 2, "n_forget": 1, "aggregate_mentions": 2},
+    "retrieval": {"embedder": {"name": "hash"}},
     "strategies": [
         {"name": "full"},
         {"name": "window", "params": {"n_turns": 3}},

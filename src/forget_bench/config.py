@@ -76,6 +76,15 @@ class ScenarioConfig(_Strict):
         )
 
 
+class EmbedderConfig(_Strict):
+    name: str = "ollama"
+    params: dict[str, Any] = Field(default_factory=lambda: {"model": "bge-m3"})
+
+
+class RetrievalConfig(_Strict):
+    embedder: EmbedderConfig = EmbedderConfig()
+
+
 class StrategyConfig(_Strict):
     name: str
     label: str | None = None  # 結果表での名前。同じ戦略を別パラメータで並べるとき用
@@ -97,6 +106,8 @@ class RunConfig(_Strict):
     repeats: int = Field(default=1, ge=1)
     # 見積もりリクエスト数の上限。超える設定は実行前に止める(利用枠のあるバックエンド用)。
     max_requests: int | None = None
+    # rag / hybrid の検索器(回答バックエンドによらず共通)
+    retrieval: RetrievalConfig = RetrievalConfig()
 
     @model_validator(mode="after")
     def _unique_labels(self) -> "RunConfig":
