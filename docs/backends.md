@@ -85,12 +85,32 @@ cd "$(mktemp -d)" && CLAUDE_CODE_OAUTH_TOKEN=... CLAUDE_CONFIG_DIR="$(mktemp -d)
 
 ## `hf` — Hugging Face transformers(KV層)
 
-- モデル: `Qwen/Qwen2.5-3B-Instruct`(bf16, 約6GB)を主、`Qwen/Qwen2.5-7B-Instruct` の4bit(bitsandbytes)を副。
-- **`attn_implementation="eager"` に固定する。** Day 025 で、SDPA/flash系カーネルでは
-  値が同一のKVでもメモリレイアウトの違いで損失が変わる(恒等変換のはずの delta=0 回転で loss 1.43→2.19)ことを確認済み。
-- KV操作: ターン/セッションごとのトークン範囲を `KVHandle` に記録し、`drop(spans, repos=True)` で該当範囲を除去し後続キーを `-削除トークン数` だけ再回転する。
-- 評価は自由生成(greedy)の回答を採点する。Day 025 で、指示チューニング済み3Bでは強制尤度(loss)が情報保持を正しく反映しなかったため、lossは補助指標に留める。
-- Ollama と同時にGPUを使わない(実行前に `ollama stop`)。
+実装は `src/forget_bench/backends/hf.py`(KV 操作は `kv_ops.py`)。`uv sync --extra hf` で torch / transformers を入れる。
+
+- モデル: `Qwen/Qwen2.5-3B-Instruct`(bf16、約6GB)。7B の 4bit(bitsandbytes)は**未実装**(第3週は 3B だけで比較した)。
+- 確認した環境(2026-11-21): torch 2.15.0+cu132 / transformers 5.23.0 / RTX 5060 Ti(sm_120)。
+- **`attn_implementation="eager"` に固定する。** eager 以外は `allow_non_eager: true` を明示しないと受け付けない。
+  - Day 025 では、SDPA で恒等変換のはずの delta=0 回転が loss を 1.43→2.19 に変えた。
+  - 今回の環境・入力(`tests/test_kv_gpu.py`)では、SDPA でも delta=0 回転後のロジットの差は 0 だった(Day 025 の現象は再現しなかった)。
+    それでも設計どおり eager に固定する(版や入力によって変わりうる差を、比較から除くため)。
+- プロンプトは ChatML で組み立てる。Qwen のチャットテンプレート(`apply_chat_template`)と文字列・トークン列が一致することを GPU テストで確認した。
+- prefill は 512 トークンずつ(eager は注意重みを丸ごと作るので、2万トークンを一度に流すとメモリが足りない)。生成は greedy、温度は 0 のみ。
+- **KV の操作**(`KVHandle` = キャッシュ + 発話ごとのトークン範囲 `TokenSpan`):
+  - `prefill(messages)` / `append(kv, span_id, messages)`: 末尾に追記し、範囲を記録する
+  - `drop(kv, span_ids, repos)`: 範囲をまとめて切除する。`repos=True` なら残したキーを「そのトークンより前で切除した数」だけ RoPE で巻き戻す
+  - `generate_from(kv, prompt, max_tokens)`: キャッシュの後ろに質問を続けて生成し、生成後は元の長さに戻す(質問どうしが影響しない)
+  - 位置は常に詰めた連番。naive drop(`repos=False`)では、切除範囲の後ろのキーに焼き込まれた回転と位置が食い違う
+- **確認したこと**(`tests/test_kv.py` は CPU の小さな乱数モデル、`tests/test_kv_gpu.py` は Qwen2.5-3B、`FORGET_BENCH_GPU=1`):
+  - delta=0 回転でキーがビット単位で一致し、次トークンのロジットも完全に一致する(Day 025 の delta=0 恒等テストの自動化)
+  - drop+repos 後の層0のキー(文脈に依存しない)は、「最初からその範囲が無かった」キャッシュと一致する。naive drop では一致しない
+    (Qwen2.5-3B で相対誤差 0.13%(bf16 の丸め程度)対 11.5%)
+  - 発話ごとに追記した KV で答えさせると、テキスト層の `full` を同じ hf で回した答えと一致する(smoke の9問すべて)
+  - drop+repos 後は正しく答え、naive drop では出力が崩れる(GPU テストの生成例)
+- 評価は自由生成(greedy)の回答を採点する。Day 025 で、指示チューニング済み 3B では強制尤度(loss)が情報保持を正しく反映しなかったため、loss は使っていない。
+- 記録: 回答ごとのピーク VRAM(`torch.cuda.max_memory_allocated`)と、モデルが見た文脈のトークン数(`context_tokens`。KV 層では再利用したキャッシュを含む)。
+  KV 層の `input_tokens` は、その質問のために新しく計算したトークン数(質問の分だけ)。
+- Ollama と同時にGPUを使わない(実行前に `ollama stop`)。ただし `rag` / `hybrid` の埋め込み(bge-m3、約0.7GB)は Ollama で動くので、
+  hf のスイープ中も載っている(検索器は全バックエンド共通のため)。
 
 ## バックエンド間の比較で気をつけること
 
