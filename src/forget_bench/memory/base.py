@@ -20,6 +20,7 @@ class StrategyContext:
     llm: Backend  # メモリ構築用。回答用と同じバックエンドを、記録用ラッパー越しに渡す
     max_tokens: int
     embedder: Embedder | None = None  # 検索を使う戦略用(全バックエンド共通の検索器)
+    kv: Any = None  # KV を直接操作できるバックエンド(hf)。KV 層の戦略が使う。記録はランナーが回答ごとに行う
 
 
 @runtime_checkable
@@ -33,6 +34,9 @@ class MemoryStrategy(Protocol):
     def build_context(self, question: Question) -> list[Message]: ...
 
     def stats(self) -> MemoryStats: ...
+
+    # 任意: answer(question) -> Generation を持つ戦略は、build_context の文脈をバックエンドに渡す代わりに
+    # 自分で回答を生成する(KV 層)。ランナーは build_context を記録用に使う。
 
 
 StrategyFactory = Callable[..., MemoryStrategy]
