@@ -143,6 +143,7 @@ def run_scenario_strategy(
         llm=metered,
         max_tokens=cfg.generation.max_tokens,
         embedder=embedder,
+        kv=backend if callable(getattr(backend, "generate_from", None)) else None,
     )
     strategy = make_strategy(strategy_name, ctx, **strategy_params)
 
@@ -160,8 +161,12 @@ def run_scenario_strategy(
     for q in scenario.questions:
         messages = strategy.build_context(q)
         answerer = metered.with_tags(purpose="answer", question_id=q.id)
+        own_answer = getattr(strategy, "answer", None)
         try:
-            gen = answerer.generate(messages, max_tokens=cfg.generation.max_tokens, temperature=cfg.generation.temperature)
+            if callable(own_answer):  # KV 層: 戦略が KV から自分で生成する
+                gen = answerer.track(lambda: own_answer(q), messages)
+            else:
+                gen = answerer.generate(messages, max_tokens=cfg.generation.max_tokens, temperature=cfg.generation.temperature)
             answer, error = gen.text, None
         except BackendError as e:
             answer, error = None, str(e)

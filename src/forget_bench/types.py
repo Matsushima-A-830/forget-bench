@@ -131,3 +131,9 @@ class MemoryStats:
     deleted_items: int = 0
     llm_calls: int = 0  # メモリ構築で使ったLLM呼び出し回数
     errors: int = 0  # メモリ構築中の失敗(抽出のパース失敗など)
+    # KV 層(hf)のみ
+    kv_tokens: int = 0  # 最後に KV キャッシュに残っているトークン数
+    prefill_tokens: int = 0  # メモリ構築で prefill したトークン数(コスト)
+    prefill_s: float = 0.0
+    dropped_tokens: int = 0  # 切除したトークン数
+    peak_vram_mb: float = 0.0  # 回答生成中のピーク VRAM(torch.cuda.max_memory_allocated)

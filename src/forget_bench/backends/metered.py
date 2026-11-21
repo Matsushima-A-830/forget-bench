@@ -131,9 +131,32 @@ class MeteredBackend:
             raise
         if self.cache is not None and key is not None:
             self.cache.put(key, gen)
+        self._log_success(row, gen)
+        return gen
+
+    def _log_success(self, row: dict[str, Any], gen: Generation) -> None:
+        raw = gen.raw or {}
         self.sink(RequestRow(**row, input_tokens=gen.input_tokens, output_tokens=gen.output_tokens,
                              latency_s=gen.latency_s, ttft_s=gen.ttft_s, output=gen.text,
-                             error=None, warnings=list(gen.warnings)))
+                             error=None, warnings=list(gen.warnings),
+                             context_tokens=raw.get("context_tokens"), peak_vram_mb=raw.get("peak_vram_mb")))
+
+    def track(self, fn: Callable[[], Generation], messages: list[Message]) -> Generation:
+        """戦略が自分で生成する呼び出し(KV 層の answer)を、同じ形式で1行記録する。キャッシュは使わない
+        (応答が messages ではなく KV の状態で決まるため)。messages は記録用の文脈(文字数を数える)。"""
+        row: dict[str, Any] = {
+            "lang": self.tags.lang, "sessions": self.tags.sessions, "repeat": self.tags.repeat,
+            "scenario_id": self.tags.scenario_id, "strategy": self.tags.strategy, "purpose": self.tags.purpose,
+            "question_id": self.tags.question_id, "n_messages": len(messages),
+            "input_chars": sum(len(m.content) for m in messages),
+        }
+        try:
+            gen = fn()
+        except BackendError as e:
+            self.sink(RequestRow(**row, input_tokens=None, output_tokens=None, latency_s=None,
+                                 ttft_s=None, output=None, error=str(e), warnings=[]))
+            raise
+        self._log_success(row, gen)
         return gen
 
     def info(self) -> dict[str, Any]:

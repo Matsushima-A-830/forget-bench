@@ -54,6 +54,8 @@ class RequestRow:
     error: str | None
     warnings: list[str]
     cached: bool = False  # キャッシュから返した(バックエンドを呼んでいない)
+    context_tokens: int | None = None  # モデルが見た文脈のトークン数(KV 層では再利用したキャッシュを含む)
+    peak_vram_mb: float | None = None  # hf のみ
 
 
 def _rate(num: int, den: int) -> float | None:
@@ -110,6 +112,10 @@ def _metrics(
     m["mean_answer_latency_s"] = mean(lat) if lat else None
     m["mean_answer_ttft_s"] = mean(ttft) if ttft else None
     m["total_latency_s"] = sum(r.latency_s or 0 for r in reqs)
+    peaks = [r.peak_vram_mb for r in reqs if r.peak_vram_mb is not None]
+    m["peak_vram_mb"] = max(peaks) if peaks else None
+    ctx_tok = [r.context_tokens for r in ans if r.context_tokens is not None]
+    m["mean_answer_context_tokens"] = mean(ctx_tok) if ctx_tok else None
     m["n_request_errors"] = sum(r.error is not None for r in reqs)
     m["n_request_warnings"] = sum(bool(r.warnings) for r in reqs)
     return m
