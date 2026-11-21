@@ -18,7 +18,7 @@
 - 完了条件: `qwen2.5:7b-instruct` で smoke → 小規模(5セッション)の表が出る
   - 2026-11-15 達成: results/2026-11-15-week1-small.md
 
-## 第2週: テキスト層の完成 + Claude ← いまここ
+## 第2週: テキスト層の完成 + Claude
 
 - [x] `claude` バックエンド + docs/backends.md の未確認事項の確認
 - [x] 戦略: `full_redact`, `summary`, `rag`, `hybrid`
@@ -27,12 +27,13 @@
   - フル設計(12,426リクエスト)は1,110リクエストで5時間枠に達して停止。縮小版(日本語 × seed 1000 × 5/20/50 × 繰り返し1)で完了(2026-11-16)。
     英語・複数シナリオ・繰り返しは未実施
 
-## 第3週: KV層(hf)
+## 第3週: KV層(hf) ← いまここ
 
-- [ ] `hf` バックエンド(eager固定、KVHandle、トークン範囲管理)
-- [ ] Day 025 の drop / repos を移植し、delta=0 恒等テストを自動テスト化
-- [ ] 戦略: `kv_full`, `kv_drop`, `kv_drop_repos`, `kv_evict_old`
-- [ ] テキスト層と同じシナリオで比較
+- [x] `hf` バックエンド(eager固定、KVHandle、トークン範囲管理)
+- [x] Day 025 の drop / repos を移植し、delta=0 恒等テストを自動テスト化
+- [x] 戦略: `kv_full`, `kv_drop`, `kv_drop_repos`, `kv_evict_old`
+- [x] テキスト層と同じシナリオで比較(results/2026-11-21-week3-kv.md)
+  - Qwen2.5-3B(bf16)だけで比較。7B 4bit・test 分割・繰り返しは未実施
 
 ## 第4週: 見せる
 

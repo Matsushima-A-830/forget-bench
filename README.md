@@ -10,7 +10,7 @@ LLMエージェントの**メモリ戦略**(要約・追記・RAG・KVキャッ�
 クラウドLLM(Claude、`claude -p` 経由)とローカルLLM(Ollama / Hugging Face transformers)の両方で動かし、
 「テキストを操作するメモリ」と「推論中のKVキャッシュそのものを操作するメモリ」を同じ物差しで測る。
 
-> ステータス: **第3週(KV層)を実装中**。バックエンド `ollama` / `claude` / `hf`、テキスト層の全戦略
+> ステータス: **第3週(KV層)まで完了**(結果: [results/2026-11-21-week3-kv.md](results/2026-11-21-week3-kv.md))。バックエンド `ollama` / `claude` / `hf`、テキスト層の全戦略
 > (`full` / `full_redact` / `window` / `summary` / `facts_append` / `rag` / `hybrid`)と KV 層の戦略
 > (`kv_full` / `kv_drop` / `kv_drop_repos` / `kv_evict_old`)、規模スイープが動く。
 > 進め方は [docs/roadmap.md](docs/roadmap.md) を参照。
