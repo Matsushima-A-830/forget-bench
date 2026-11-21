@@ -83,6 +83,7 @@ class HFBackend:
             raise ValueError("attn_implementation は eager に固定(Day 025 の知見)。比較のためだけに allow_non_eager=True で変えられる")
         self.torch = torch
         self.model_name = model
+        self.revision = revision
         self.device = device
         self.prefill_chunk = prefill_chunk
         self.attn_implementation = attn_implementation
@@ -97,9 +98,24 @@ class HFBackend:
             self.model = AutoModelForCausalLM.from_pretrained(
                 model, revision=revision, dtype=torch_dtype, attn_implementation=attn_implementation
             ).to(device)
+            self.revision = self._resolve_revision(model, revision)
         self.model.eval()
         self.device = str(next(self.model.parameters()).device)
         self.stop_ids = {i for i in (self._token_id(IM_END), getattr(self.tokenizer, "eos_token_id", None)) if i is not None}
+
+    @staticmethod
+    def _resolve_revision(model: str, revision: str | None) -> str | None:
+        """読み込んだ重みのコミットハッシュ(meta.json に残す)。transformers 5 では config._commit_hash が
+        入らないことがあるので、ローカルのスナップショットのディレクトリ名(= コミットハッシュ)から取る。"""
+        try:
+            from pathlib import Path
+
+            from huggingface_hub import try_to_load_from_cache
+
+            path = try_to_load_from_cache(model, "config.json", revision=revision)
+            return Path(path).parent.name if isinstance(path, str) else revision
+        except Exception:  # noqa: BLE001 — ローカルパス指定などでは取れない。その場合は指定値を残す
+            return revision
 
     # --- トークン ---------------------------------------------------------------
 
@@ -274,7 +290,7 @@ class HFBackend:
         out: dict[str, Any] = {
             "backend": "hf",
             "model": self.model_name,
-            "revision": getattr(cfg, "_commit_hash", None),
+            "revision": self.revision or getattr(cfg, "_commit_hash", None),
             "dtype": str(next(self.model.parameters()).dtype),
             "attn_implementation": getattr(cfg, "_attn_implementation", self.attn_implementation),
             "prefill_chunk": self.prefill_chunk,
