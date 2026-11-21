@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from typing import Any, Literal
 
 from forget_bench.backends.base import BackendError
-from forget_bench.memory.base import StrategyContext, register_strategy
+from forget_bench.memory.base import ScenarioShape, StrategyContext, register_strategy
 from forget_bench.memory.render import question_text, session_header
 from forget_bench.prompts import load_prompt
 from forget_bench.scoring.scorer import contains_value
@@ -76,8 +76,8 @@ class FactsAppendMemory:
         self._errors = 0
 
     @staticmethod
-    def estimate_memory_calls(n_user_turns: int, extractor: str = "llm", **_: Any) -> int:
-        return n_user_turns if extractor == "llm" else 0
+    def estimate_memory_calls(shape: ScenarioShape, extractor: str = "llm", **_: Any) -> int:
+        return shape.n_user_turns if extractor == "llm" else 0
 
     def _extract(self, turn: Turn) -> list[tuple[str, str]]:
         if self.extractor == "oracle":

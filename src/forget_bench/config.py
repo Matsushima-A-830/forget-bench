@@ -31,7 +31,7 @@ class ScenarioConfig(_Strict):
     split: Split = "dev"
     n_scenarios: int | None = None  # seeds を省略したとき、分割の先頭から n 個
     seeds: list[int] | None = None
-    sessions: int = 5
+    sessions: int | list[int] = 5  # リストなら規模スイープ(例: [5, 20, 50])
     turns_per_session: tuple[int, int] = (10, 20)
     n_attributes: int = 4
     max_changes: int = 4
@@ -55,10 +55,17 @@ class ScenarioConfig(_Strict):
         assert self.n_scenarios is not None
         return seeds_for(self.split, self.n_scenarios)
 
-    def params(self, lang: Lang) -> ScenarioParams:
+    def session_list(self) -> list[int]:
+        return [self.sessions] if isinstance(self.sessions, int) else list(self.sessions)
+
+    def params(self, lang: Lang, sessions: int | None = None) -> ScenarioParams:
+        if sessions is None:
+            if not isinstance(self.sessions, int):
+                raise ValueError("sessions がリストのときは sessions を指定する")
+            sessions = self.sessions
         return ScenarioParams(
             lang=lang,
-            sessions=self.sessions,
+            sessions=sessions,
             turns_per_session=tuple(self.turns_per_session),  # type: ignore[arg-type]
             n_attributes=self.n_attributes,
             max_changes=self.max_changes,
@@ -85,6 +92,11 @@ class RunConfig(_Strict):
     generation: GenerationConfig = GenerationConfig()
     scenario: ScenarioConfig
     strategies: list[StrategyConfig]
+    # 同じ入力を何回送るか。温度を指定できないバックエンド(claude)の揺れを測る(docs/protocol.md)。
+    # ollama/hf は seed 固定で決定的なので 1 にし、揺れは別 seed で見る。
+    repeats: int = Field(default=1, ge=1)
+    # 見積もりリクエスト数の上限。超える設定は実行前に止める(利用枠のあるバックエンド用)。
+    max_requests: int | None = None
 
     @model_validator(mode="after")
     def _unique_labels(self) -> "RunConfig":
