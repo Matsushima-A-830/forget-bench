@@ -102,6 +102,11 @@ def test_parse_facts() -> None:
     assert parse_facts("[]") == []
     assert parse_facts("no json") is None
     assert parse_facts("[{broken") is None
+    # 複数の配列を改行で並べる・オブジェクトを1行ずつ書く(qwen2.5:7b の実際の出力形式)
+    two = '[{"turn": "t0", "key": "a", "value": "1"}]\n[{"turn": "t6", "key": "b", "value": "2"}]'
+    assert parse_facts(two) == [("a", "1"), ("b", "2")]
+    lines = '{"key": "a", "value": "1"}\n{"key": "b", "value": "2"}'
+    assert parse_facts(lines) == [("a", "1"), ("b", "2")]
 
 
 def test_full_redact_masks_only_forgotten_values() -> None:
@@ -227,3 +232,59 @@ def test_rag_dense_requires_embedder() -> None:
     with pytest.raises(ValueError):
         make_strategy("rag", _ctx())
     make_strategy("rag", _ctx(), mode="bm25")  # BM25だけなら埋め込み不要
+
+
+class _BatchLLM:
+    """まとめ抽出用の偽LLM: [ID] 行ごとに正解ラベルを返す。"""
+
+    name = "batch-fake"
+
+    def __init__(self, sc: Scenario) -> None:
+        self.calls = 0
+        self.by_id = {t.id: t.annotation for t in sc.turns if t.role == "user"}
+
+    def generate(self, messages: list[Message], *, max_tokens: int, temperature: float = 0.0) -> Generation:
+        import json
+
+        self.calls += 1
+        items = []
+        for line in messages[-1].content.splitlines():
+            tid = line[1:].split("]", 1)[0]
+            a = self.by_id.get(tid)
+            if a:
+                items.append({"turn": tid, "key": a.label, "value": a.value})
+        return Generation(json.dumps(items, ensure_ascii=False), 1, 1, 0.0, None)
+
+    def info(self) -> dict[str, str]:
+        return {}
+
+
+def test_facts_session_batching_calls_and_deferred_forget() -> None:
+    from forget_bench.memory.base import ScenarioShape, estimate_memory_calls
+
+    sc = generate(1002, make_params())
+    llm = _BatchLLM(sc)
+    s = make_strategy("facts_append", _ctx(llm), extract_every="session")
+    _feed(s, sc)
+    text = _context_text(s, sc)
+    assert not _leaks(text, sc)
+    shape = ScenarioShape(sum(t.role == "user" for t in sc.turns), sc.params.sessions, len(sc.forget_requests))
+    assert llm.calls == sc.params.sessions == estimate_memory_calls("facts_append", shape, {"extract_every": "session"})
+    assert s.stats().deleted_items == len(sc.forget_requests)
+    # 出所の発話IDが対応づいている
+    assert all(r.source_turn_id for r in s.records)
+
+
+def test_hybrid_combines_and_forgets_both() -> None:
+    from forget_bench.retrieval import make_embedder
+
+    sc = generate(1000, make_params())
+    ctx = StrategyContext("ja", "SYSTEM", _BatchLLM(sc), 256, embedder=make_embedder("hash"))
+    s = make_strategy("hybrid", ctx, extract_every="session", top_k=4)
+    _feed(s, sc)
+    for q in sc.questions:
+        content = s.build_context(q)[-1].content
+        assert "記録した事実" in content and "過去のユーザーの発話" in content
+        assert not _leaks(content, sc)
+    removed = sum(len(r.source_turn_ids) for r in sc.forget_requests)
+    assert s.stats().deleted_items == len(sc.forget_requests) + removed
