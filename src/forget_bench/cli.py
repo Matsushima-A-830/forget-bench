@@ -1,4 +1,4 @@
-"""コマンドライン: forget-bench run / report / scenario。"""
+"""コマンドライン: forget-bench run / report / figures / scenario など。"""
 
 from __future__ import annotations
 
@@ -41,6 +41,10 @@ def main(argv: list[str] | None = None) -> int:
                     help="summary.json ではなく生ログから集計する(途中で止まった run 用。完了した単位だけ)")
     pp.add_argument("--scenarios", default=None, help="集計するシナリオIDをカンマ区切りで絞る(--from-logs と併用)")
 
+    pf = sub.add_parser("figures", help="発表用の図を runs/ の生ログから作る(viz extra が必要)")
+    pf.add_argument("config", nargs="?", default="configs/figures.yaml")
+    pf.add_argument("--out", default="results/figures")
+
     ps = sub.add_parser("scenario", help="シナリオを1つ生成してJSONで表示する(dev分割のみ)")
     ps.add_argument("--seed", type=int, required=True)
     ps.add_argument("--lang", choices=["ja", "en"], default="ja")
@@ -78,6 +82,10 @@ def main(argv: list[str] | None = None) -> int:
         else:
             metrics = json.loads((Path(args.run_dir) / "summary.json").read_text(encoding="utf-8"))["metrics"]
         print(render_by_scale(metrics) if args.by_scale else render_summary_markdown(Path(args.run_dir).name, metrics))
+    elif args.cmd == "figures":
+        from forget_bench.figures import make_figures
+
+        print(f"出力: {make_figures(args.config, args.out)}")
     elif args.cmd == "scenario":
         if split_of(args.seed) != "dev":
             # test 分割の中身を見ながらプロンプトを調整しないため(AGENTS.md 絶対ルール4)

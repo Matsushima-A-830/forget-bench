@@ -1,0 +1,12 @@
+# 発表用の図(forget-bench figures)。runs/ は git 管理外なので、図と一緒に figures.json(数値と出所)を results/figures/ に残す。
+runs:
+  - label: "claude opus-5.5"
+    run: runs/20261116-073132-sweep-claude-ja1     # 日本語 × seed 1000 × 5/20/50(縮小版)
+  - label: "ollama qwen2.5 7B"
+    run: runs/20261115-205757-sweep-ollama         # 日英 × seed 1000–1002 × 5/20/50
+  - label: "hf qwen2.5 3B"
+    run: runs/20261121-183356-sweep-hf             # 日英 × seed 1000–1002 × 5/20/50(KV 層を含む)
+# 3つの run がすべて持っているシナリオ(claude 縮小版に合わせる)
+common_scenarios: [dev-1000-ja-s5, dev-1000-ja-s20, dev-1000-ja-s50]
+# 規模曲線に描く戦略(色はこの順で固定。full_redact は full とほぼ同じ、kv_drop は kv_drop_repos とほぼ同じなので省く)
+line_strategies: [full, window, summary, facts_append, rag, hybrid, kv_full, kv_drop_repos]
