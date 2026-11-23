@@ -10,6 +10,12 @@
 | 031 | Memory Tax(メモリの税と利益) | 「RAGで答えられるのにメモリが負ける」の分解 | 縮小実験では税1件・利益3件 |
 | 042 | billion-context | 長文脈の扱い | — |
 
+## 移植したコード
+
+| 移植先 | 元 | 元のライセンス |
+|---|---|---|
+| `src/forget_bench/backends/kv_ops.py` | ai-100days `experiments/day-025/akv_poc_gpu.py` の `slice_out_span()` / `rotate_keys_by_delta()`(commit `59983b5`) | ai-100days にライセンスファイルはない(同じ作者のリポジトリ)。Day 025 は AKV の公式コード(Apache-2.0)を使わずに自作したもの |
+
 ## 論文・リポジトリ
 
 - AKV (Cache Engineering for Agents): https://huggingface.co/papers/2610.28577 / https://github.com/thu-nics/AKV
