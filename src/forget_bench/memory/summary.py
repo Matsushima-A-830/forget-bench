@@ -130,3 +130,7 @@ class SummaryMemory:
             llm_calls=self._llm_calls,
             errors=self._errors,
         )
+
+    def snapshot(self) -> dict[str, Any]:
+        return {"kind": "text", "text": self.summary, "pending_turns": len(self.buffer),
+                "updates": self._llm_calls, "deletions": self._deletions}

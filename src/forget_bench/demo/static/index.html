@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>forget-bench デモ</title>
+<style>
+:root {
+  color-scheme: light;
+  --bg: #f6f5f2; --surface: #fcfcfb; --surface-2: #efeee9; --line: #dddbd4;
+  --text: #0b0b0b; --text-2: #52514e; --muted: #85837c;
+  --user: #2a78d6; --assistant: #1baf7a; --system: #85837c;
+  --accent: #2a78d6; --kv: #eb6834;
+  --danger: #c62f2e; --danger-bg: #fbe4e3; --gone-bg: #ecebe6;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #121211; --surface: #1a1a19; --surface-2: #242422; --line: #353532;
+    --text: #f0efec; --text-2: #c3c2b7; --muted: #8d8c84;
+    --user: #3987e5; --assistant: #199e70; --system: #8d8c84;
+    --accent: #3987e5; --kv: #d95926;
+    --danger: #ff7b7a; --danger-bg: #3d1b1b; --gone-bg: #2b2b29;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 14px/1.55 system-ui, "Hiragino Sans", "Noto Sans JP", "IPAGothic", sans-serif; }
+header { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 10px 16px;
+  border-bottom: 1px solid var(--line); background: var(--surface); }
+header h1 { font-size: 16px; margin: 0 8px 0 0; }
+header .meta { color: var(--text-2); font-size: 12px; }
+header .controls { margin-left: auto; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+input, button, select { font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 6px; padding: 5px 9px; }
+button { cursor: pointer; }
+button:hover:not(:disabled) { border-color: var(--accent); }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+button:disabled { opacity: .5; cursor: progress; }
+input[type=number] { width: 80px; }
+main { display: grid; grid-template-columns: minmax(320px, 1fr) minmax(420px, 1.6fr); gap: 12px; padding: 12px 16px;
+  height: calc(100vh - 56px); }
+@media (max-width: 900px) { main { grid-template-columns: 1fr; height: auto; } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; display: flex;
+  flex-direction: column; min-height: 0; }
+.panel > h2 { font-size: 13px; margin: 0; padding: 10px 12px; border-bottom: 1px solid var(--line); color: var(--text-2);
+  font-weight: 600; display: flex; gap: 8px; align-items: center; }
+#chat { flex: 1; overflow-y: auto; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.msg { max-width: 88%; padding: 6px 10px; border-radius: 10px; white-space: pre-wrap; word-break: break-word; }
+.msg.user { align-self: flex-end; background: color-mix(in srgb, var(--user) 14%, var(--surface)); }
+.msg.assistant { align-self: flex-start; background: var(--surface-2); }
+.msg.event { align-self: center; color: var(--muted); font-size: 12px; background: none; }
+.msg.forget { outline: 2px solid var(--danger); outline-offset: -2px; }
+.msg .by { display: block; color: var(--muted); font-size: 11px; margin-top: 2px; }
+.composer { display: flex; gap: 6px; padding: 10px 12px; border-top: 1px solid var(--line); }
+.composer input { flex: 1; }
+.hint { color: var(--muted); font-size: 12px; padding: 0 12px 10px; }
+#right { display: grid; grid-template-rows: auto minmax(0, 1fr); gap: 12px; min-height: 0; }
+.tabs { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 12px; border-bottom: 1px solid var(--line); }
+.tab { border-radius: 999px; padding: 3px 10px; font-size: 12px; }
+.tab.active { background: var(--text); color: var(--surface); border-color: var(--text); }
+.tab .layer { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 5px; background: var(--accent); }
+.tab .layer.kv { background: var(--kv); border-radius: 1px; transform: rotate(45deg); }
+.tab .bad { color: var(--danger); font-weight: 700; margin-left: 4px; }
+#memory { flex: 1; overflow-y: auto; padding: 10px 12px; }
+.stats { color: var(--text-2); font-size: 12px; margin-bottom: 8px; }
+.item { padding: 5px 8px; border-bottom: 1px solid var(--line); white-space: pre-wrap; word-break: break-word; }
+.item .tag { color: var(--muted); font-size: 11px; margin-right: 6px; }
+.item.deleted, .item.redacted { background: var(--gone-bg); color: var(--muted); }
+.item.dropped { background: var(--gone-bg); color: var(--muted); text-decoration: line-through; }
+mark.leak { background: var(--danger-bg); color: var(--danger); font-weight: 700; padding: 0 2px; border-radius: 3px; }
+.summary-text { white-space: pre-wrap; padding: 8px; background: var(--surface-2); border-radius: 8px; }
+.kvbar { display: flex; height: 26px; gap: 1px; margin: 6px 0 2px; }
+.kvbar div { min-width: 2px; border-radius: 2px; }
+.kvbar .user { background: var(--user); } .kvbar .assistant { background: var(--assistant); }
+.kvbar .system { background: var(--system); } .kvbar .gone { background: repeating-linear-gradient(45deg,
+  var(--danger) 0 3px, transparent 3px 6px); }
+.kvbar .hit { outline: 2px solid var(--danger); outline-offset: 1px; }
+.axis { display: flex; justify-content: space-between; color: var(--muted); font-size: 11px; }
+.legend { display: flex; gap: 12px; color: var(--text-2); font-size: 12px; margin: 4px 0 8px; flex-wrap: wrap; }
+.legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px;
+  margin-right: 4px; vertical-align: -1px; background: var(--c); }
+.drop { border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; margin: 8px 0; }
+.drop h3 { font-size: 12px; margin: 0 0 4px; color: var(--text-2); font-weight: 600; }
+.forgotten { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px 12px; border-bottom: 1px solid var(--line);
+  font-size: 12px; align-items: center; }
+.chip { background: var(--danger-bg); color: var(--danger); border-radius: 999px; padding: 2px 8px; }
+#ask .row { display: flex; gap: 6px; padding: 10px 12px; }
+#ask .row input { flex: 1; }
+.qbtns { display: flex; flex-wrap: wrap; gap: 4px; padding: 0 12px 8px; max-height: 70px; overflow-y: auto; }
+.qbtns button { font-size: 11px; padding: 2px 8px; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+td, th { text-align: left; padding: 5px 8px; border-top: 1px solid var(--line); vertical-align: top; }
+th { color: var(--text-2); font-weight: 600; white-space: nowrap; }
+.ok { color: var(--text-2); } .ng { color: var(--danger); font-weight: 700; }
+#answers { max-height: 32vh; overflow-y: auto; }
+#error { color: var(--danger); font-size: 12px; padding: 0 12px; }
+.busy { color: var(--muted); font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>forget-bench デモ</h1>
+  <span class="meta" id="meta">読み込み中…</span>
+  <div class="controls">
+    <label class="meta">seed <input id="seed" type="number" value="1000" min="1000" max="9999"></label>
+    <label class="meta">セッション <input id="sessions" type="number" value="3" min="3" max="10"></label>
+    <button id="load">シナリオを読み込む</button>
+    <button id="newsession">次のセッション</button>
+    <button id="reset">リセット</button>
+  </div>
+</header>
+<main>
+  <section class="panel">
+    <h2>会話 <span class="busy" id="busy"></span></h2>
+    <div id="chat"></div>
+    <div class="composer">
+      <input id="text" placeholder="発話を入力(例: 私の電話番号は 090-1234-5678 です)" autocomplete="off">
+      <button class="primary" id="send">送信</button>
+    </div>
+    <div class="hint">消すときは値を括弧で囲む: 「090-1234-5678」を忘れて。 回答は主戦略 <b id="primary"></b> のメモリで作る。</div>
+  </section>
+  <section id="right">
+    <div class="panel" id="ask">
+      <h2>全戦略に同じ質問をする(会話には加えない)</h2>
+      <div class="row">
+        <input id="question" placeholder="例: 私の電話番号を教えて" autocomplete="off">
+        <button class="primary" id="askbtn">聞く</button>
+      </div>
+      <div class="qbtns" id="qbtns"></div>
+      <div id="error"></div>
+      <div id="answers"></div>
+    </div>
+    <div class="panel">
+      <h2>メモリの中身</h2>
+      <div class="forgotten" id="forgotten"></div>
+      <div class="tabs" id="tabs"></div>
+      <div id="memory"></div>
+    </div>
+  </section>
+</main>
+<script>
+"use strict";
+let state = null, lastAnswers = null;
+// #tab=<戦略名> で最初に開くタブを選べる(発表のスクリーンショット用)
+let selected = location.hash.startsWith("#tab=") ? decodeURIComponent(location.hash.slice(5)) : null;
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+// 消した値が残っていたら赤で示す(表示用の簡易判定。採点は Python 側の採点器)
+function norm(s) { return String(s).normalize("NFKC").toLowerCase().replace(/[\s\p{P}\p{S}]/gu, ""); }
+function contains(text, value) { const v = norm(value); return v.length > 0 && norm(text).includes(v); }
+function highlight(text) {
+  let html = esc(text);
+  for (const f of (state?.forgotten || [])) {
+    const v = esc(f.value);
+    if (v && html.includes(v)) html = html.split(v).join(`<mark class="leak">${v}</mark>`);
+  }
+  return html;
+}
+function leaks(text) { return (state?.forgotten || []).filter((f) => contains(text, f.value)).length; }
+
+async function api(path, body) {
+  setBusy(true);
+  try {
+    const res = await fetch(path, body === undefined ? {} : { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || res.statusText);
+    $("error").textContent = "";
+    return data;
+  } catch (e) { $("error").textContent = String(e.message || e); throw e; }
+  finally { setBusy(false); }
+}
+function setBusy(b) {
+  document.querySelectorAll("button").forEach((x) => (x.disabled = b));
+  $("busy").textContent = b ? "処理中…(GPU で生成しています)" : "";
+}
+
+function render() {
+  const b = state.backend || {};
+  $("meta").textContent = `${b.backend || "?"} ${b.model || ""}${b.attn_implementation ? " / " + b.attn_implementation : ""}` +
+    ` · ${state.lang} · セッション ${state.session}` + (state.scenario_id ? ` · ${state.scenario_id}` : "");
+  $("primary").textContent = state.primary;
+  renderChat(); renderForgotten(); renderTabs(); renderMemory(); renderQuestions(); renderAnswers();
+}
+
+function renderChat() {
+  const el = $("chat");
+  el.innerHTML = state.chat.map((c) => {
+    const by = c.role === "assistant" && c.strategy ? `<span class="by">${esc(c.strategy)} · ${c.latency_s.toFixed(2)} 秒</span>` : "";
+    const sess = c.role === "user" && c.turn_id ? `<span class="by">[${c.session}] ${esc(c.turn_id)}</span>` : "";
+    return `<div class="msg ${c.role}${c.forget ? " forget" : ""}">${esc(c.text)}${by}${sess}</div>`;
+  }).join("");
+  el.scrollTop = el.scrollHeight;
+}
+
+function renderForgotten() {
+  const f = state.forgotten;
+  $("forgotten").innerHTML = f.length
+    ? "消した値: " + f.map((x) => `<span class="chip">${esc(x.value)}</span>`).join("") + `<span class="meta">(残っていたら <mark class="leak">赤</mark> で表示)</span>`
+    : `<span class="meta">まだ何も消していない。「…」を忘れて と送るか、シナリオを読み込む。</span>`;
+}
+
+function memoryText(snap) {
+  switch (snap.kind) {
+    case "turns": case "docs": return snap.items.map((i) => i.text).join("\n");
+    case "text": return snap.text;
+    case "facts": return snap.items.map((i) => i.value).join("\n");
+    case "composite": return snap.parts.map(memoryText).join("\n");
+    case "kv": return snap.spans.map((s) => s.text).join("\n");
+    default: return "";
+  }
+}
+
+function renderTabs() {
+  const names = Object.keys(state.memory);
+  if (!names.includes(selected)) selected = names[0];
+  $("tabs").innerHTML = names.map((n) => {
+    const m = state.memory[n];
+    const kv = m.snapshot.kind === "kv";
+    const bad = leaks(memoryText(m.snapshot));
+    return `<button class="tab${n === selected ? " active" : ""}" data-name="${esc(n)}"><span class="layer${kv ? " kv" : ""}"></span>${esc(n)}${bad ? `<span class="bad" title="消した値が残っている">●${bad}</span>` : ""}</button>`;
+  }).join("");
+  document.querySelectorAll(".tab").forEach((t) => t.addEventListener("click", () => { selected = t.dataset.name; renderTabs(); renderMemory(); }));
+}
+
+function renderMemory() {
+  const m = state.memory[selected];
+  if (!m) { $("memory").innerHTML = ""; return; }
+  const s = m.stats;
+  const parts = [`保持 ${s.items} 件 · ${s.chars.toLocaleString()} 文字`, `削除 ${s.deleted_items}`];
+  if (s.llm_calls) parts.push(`メモリ構築の LLM 呼び出し ${s.llm_calls}`);
+  if (m.snapshot.kind === "kv") parts.push(`KV ${s.kv_tokens.toLocaleString()} トークン`, `切除 ${s.dropped_tokens.toLocaleString()} トークン`);
+  $("memory").innerHTML = `<div class="stats">${esc(m.strategy)} — ${parts.join(" · ")}</div>` + snapshotHtml(m.snapshot);
+}
+
+function snapshotHtml(snap) {
+  switch (snap.kind) {
+    case "turns":
+      return (snap.note ? `<div class="stats">${esc(snap.note)}</div>` : "") + (snap.items.length ? snap.items.map((i) =>
+        `<div class="item${i.redacted ? " redacted" : ""}"><span class="tag">[${i.session}] ${esc(i.id)}</span>${highlight(i.text)}</div>`).join("") : empty());
+    case "text":
+      return `<div class="summary-text">${snap.text ? highlight(snap.text) : "(まだ要約がない)"}</div>` +
+        `<div class="stats">要約の更新 ${snap.updates} 回 · 削除指示 ${snap.deletions} 回 · 未反映の発話 ${snap.pending_turns}</div>`;
+    case "facts":
+      return (snap.pending_turns ? `<div class="stats">未抽出の発話 ${snap.pending_turns}(次のセッション区切りか質問で抽出)</div>` : "") +
+        (snap.items.length ? snap.items.map((i) => `<div class="item${i.deleted ? " deleted" : ""}"><span class="tag">[${i.session}] ${esc(i.source)}</span><b>${esc(i.key)}</b>: ${i.deleted ? "(削除済み)" : highlight(i.value)}</div>`).join("") : empty());
+    case "docs":
+      return `<div class="stats">検索 ${esc(snap.mode)} · top_k ${snap.top_k} · 索引から削除 ${snap.removed}</div>` +
+        (snap.items.length ? snap.items.map((i) => `<div class="item"><span class="tag">[${i.session}] ${esc(i.id)}</span>${highlight(i.text)}</div>`).join("") : empty());
+    case "composite":
+      return snap.parts.map((p) => `<div class="drop"><h3>${p.kind === "facts" ? "事実ストア" : "検索索引"}</h3>${snapshotHtml(p)}</div>`).join("");
+    case "kv": return kvHtml(snap);
+    default: return empty();
+  }
+}
+const empty = () => `<div class="stats">(空)</div>`;
+
+function kvBar(spans, total, goneIds) {
+  return `<div class="kvbar">` + spans.map((s) => {
+    const w = Math.max(s.end - s.start, total / 500);  // トークン数に比例(隙間を引いた残りを flex-grow で分ける)
+    const cls = goneIds && goneIds.has(s.id) ? "gone" : s.role;
+    const hit = leaks(s.text) ? " hit" : "";
+    return `<div class="${cls}${hit}" style="flex:${w} 1 0" title="${esc(s.id)} [${s.start}, ${s.end}) ${esc(s.text.slice(0, 80))}"></div>`;
+  }).join("") + `</div>`;
+}
+
+function kvHtml(snap) {
+  let html = `<div class="legend"><span style="--c:var(--system)">system</span><span style="--c:var(--user)">user</span>` +
+    `<span style="--c:var(--assistant)">assistant</span><span style="--c:var(--danger)">切除した範囲</span></div>`;
+  html += `<div class="stats">いまの KV キャッシュ(位置 0〜${snap.length.toLocaleString()})</div>` + kvBar(snap.spans, snap.length) +
+    `<div class="axis"><span>0</span><span>${snap.length.toLocaleString()} トークン</span></div>`;
+  // 切除の記録: 切除の直前のレイアウトを再現して、どこを切ったかを見せる(新しいものから)
+  const drops = (snap.drops || []).slice().reverse();
+  for (const d of drops.slice(0, 5)) {
+    const gone = new Set(d.spans.map((s) => s.id));
+    const n = d.spans.reduce((a, s) => a + (s.end - s.start), 0);
+    const ghost = d.spans.map((s) => ({ ...s, role: "gone" }));
+    html += `<div class="drop"><h3>切除: ${d.spans.length} 範囲 · ${n} トークン · ${d.length_before.toLocaleString()} → ${d.length_after.toLocaleString()} トークン · ` +
+      `${d.repos ? "後続のキーを RoPE で巻き戻した(repos)" : "後続のキーの回転はそのまま(naive)"}</h3>` +
+      kvBar(ghost.sort((a, b) => a.start - b.start).flatMap((g, i, arr) => {
+        const prevEnd = i === 0 ? 0 : arr[i - 1].end;
+        return [{ id: "_keep" + i, start: prevEnd, end: g.start, role: "system", text: "" }, g];
+      }).concat([{ id: "_tail", start: ghost.length ? Math.max(...ghost.map((g) => g.end)) : 0, end: d.length_before, role: "system", text: "" }]), d.length_before, gone) +
+      d.spans.map((s) => `<div class="item dropped"><span class="tag">[${s.start}, ${s.end}) ${esc(s.id)}</span>${esc(s.text)}</div>`).join("") + `</div>`;
+  }
+  html += `<div class="stats" style="margin-top:8px">範囲の一覧(位置は切除後に詰めた連番)</div>` + snap.spans.map((s) =>
+    `<div class="item"><span class="tag">[${s.start}, ${s.end}) ${esc(s.id)}</span>${highlight(s.text.length > 160 ? s.text.slice(0, 160) + "…" : s.text)}</div>`).join("");
+  return html;
+}
+
+function renderQuestions() {
+  const qs = state.questions || [];
+  $("qbtns").innerHTML = qs.map((q, i) => `<button data-i="${i}" title="${esc(q.category)}${q.gold.length ? " / 正解: " + esc(q.gold[0]) : ""}">${esc(q.category)}: ${esc(q.text.slice(0, 24))}</button>`).join("");
+  document.querySelectorAll("#qbtns button").forEach((b) => b.addEventListener("click", () => { $("question").value = qs[+b.dataset.i].text; ask(); }));
+}
+
+function renderAnswers() {
+  if (!lastAnswers) { $("answers").innerHTML = ""; return; }
+  const rows = Object.entries(lastAnswers).map(([n, a]) =>
+    `<tr><th>${esc(n)}</th><td>${highlight(a.answer)}</td><td class="${a.leaked.length ? "ng" : "ok"}">${a.leaked.length ? "漏洩 " + a.leaked.map(esc).join(", ") : "漏洩なし"}</td><td class="ok">${a.latency_s.toFixed(2)} 秒</td></tr>`);
+  $("answers").innerHTML = `<table><tr><th>戦略</th><th>回答</th><th>消した値</th><th>時間</th></tr>${rows.join("")}</table>`;
+}
+
+async function send() {
+  const t = $("text").value.trim(); if (!t) return;
+  $("text").value = "";
+  state = await api("/api/chat", { text: t }); render();
+}
+async function ask() {
+  const q = $("question").value.trim(); if (!q) return;
+  const res = await api("/api/ask", { text: q });
+  lastAnswers = res.answers; state = res; render();
+}
+$("send").addEventListener("click", send);
+$("text").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.isComposing) send(); });
+$("askbtn").addEventListener("click", ask);
+$("question").addEventListener("keydown", (e) => { if (e.key === "Enter" && !e.isComposing) ask(); });
+$("load").addEventListener("click", async () => { lastAnswers = null; state = await api("/api/load", { seed: +$("seed").value, sessions: +$("sessions").value }); render(); });
+$("newsession").addEventListener("click", async () => { state = await api("/api/session", {}); render(); });
+$("reset").addEventListener("click", async () => { lastAnswers = null; state = await api("/api/reset", {}); render(); });
+api("/api/state").then((s) => { state = s; render(); });
+</script>
+</body>
+</html>

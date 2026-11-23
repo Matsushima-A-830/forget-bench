@@ -1,0 +1,22 @@
+# デモチャット UI(forget-bench demo configs/demo_hf.yaml)。KV 層の切除をライブで見せる。
+# GPU を使う前に nvidia-smi で空きを確認し、Ollama のチャットモデルを降ろす(CLAUDE.md)。
+backend:
+  name: hf
+  params:
+    model: Qwen/Qwen2.5-3B-Instruct
+    dtype: bfloat16
+    attn_implementation: eager
+lang: ja
+max_tokens: 160
+primary: kv_drop_repos     # 会話の返事を作る戦略
+strategies:
+  - name: full             # 削除要求を無視する(消した値が残るのを見せる)
+  - name: full_redact
+  - name: summary
+  - name: facts_append
+    params: {extract_every: session}
+  - name: kv_full
+  - name: kv_drop
+  - name: kv_drop_repos
+retrieval:
+  embedder: {name: ollama, params: {model: bge-m3}}
