@@ -1,0 +1,1482 @@
+{
+ "definitions": {
+  "remember": "current / historical / oneshot の質問をまとめた正答率",
+  "forget": "1 - 削除要求あたりの漏洩率",
+  "over_forget": "削除要求していない情報を「削除済み」と答えて外した率(current/historical/oneshot/aggregate)"
+ },
+ "config": "configs/figures.yaml",
+ "runs": {
+  "claude opus-5.5": {
+   "run_id": "20261116-073132-sweep-claude-ja1",
+   "status": "completed",
+   "git_commit": "f66d794adf4146acd544ef9a9894c78ac489be49",
+   "git_dirty": false,
+   "model": "claude-opus-5-5",
+   "seeds": [
+    1000
+   ],
+   "sessions": [
+    5,
+    20,
+    50
+   ]
+  },
+  "ollama qwen2.5 7B": {
+   "run_id": "20261115-205757-sweep-ollama",
+   "status": "completed",
+   "git_commit": "7e481d139d0482c6338b0ecf499ebb64e57ba4b8",
+   "git_dirty": false,
+   "model": "qwen2.5:7b-instruct",
+   "seeds": [
+    1000,
+    1001,
+    1002
+   ],
+   "sessions": [
+    5,
+    20,
+    50
+   ]
+  },
+  "hf qwen2.5 3B": {
+   "run_id": "20261121-183356-sweep-hf",
+   "status": "completed",
+   "git_commit": "69fd56741c90f2961e421695a3ee438b6175dbbd",
+   "git_dirty": false,
+   "model": "Qwen/Qwen2.5-3B-Instruct",
+   "seeds": [
+    1000,
+    1001,
+    1002
+   ],
+   "sessions": [
+    5,
+    20,
+    50
+   ]
+  }
+ },
+ "common_scenarios": [
+  "dev-1000-ja-s5",
+  "dev-1000-ja-s20",
+  "dev-1000-ja-s50"
+ ],
+ "points_all": [
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "facts_append",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.9534883720930233,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "facts_append_oracle",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 1.0,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "full",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.9534883720930233,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "full_redact",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.9767441860465116,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "hybrid",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.9767441860465116,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "rag",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.9767441860465116,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "summary",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 1.0,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "window",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.023255813953488372,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "facts_append",
+   "sessions": null,
+   "n_remember": 268,
+   "remember": 0.4925373134328358,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.0034965034965034965
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "facts_append_oracle",
+   "sessions": null,
+   "n_remember": 268,
+   "remember": 0.8097014925373134,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.0034965034965034965
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "full",
+   "sessions": null,
+   "n_remember": 268,
+   "remember": 0.7126865671641791,
+   "n_forget": 36,
+   "forget": 0.5277777777777778,
+   "over_forget": 0.03496503496503497
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "full_redact",
+   "sessions": null,
+   "n_remember": 268,
+   "remember": 0.7350746268656716,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.024475524475524476
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "hybrid",
+   "sessions": null,
+   "n_remember": 268,
+   "remember": 0.7947761194029851,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "rag",
+   "sessions": null,
+   "n_remember": 268,
+   "remember": 0.8022388059701493,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.013986013986013986
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "summary",
+   "sessions": null,
+   "n_remember": 268,
+   "remember": 0.22014925373134328,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.0034965034965034965
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "window",
+   "sessions": null,
+   "n_remember": 268,
+   "remember": 0.033582089552238806,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.08041958041958042
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "facts_append",
+   "sessions": null,
+   "n_remember": 268,
+   "remember": 0.373134328358209,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.038461538461538464
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "facts_append_oracle",
+   "sessions": null,
+   "n_remember": 268,
+   "remember": 0.7052238805970149,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.01048951048951049
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "full",
+   "sessions": null,
+   "n_remember": 268,
+   "remember": 0.43656716417910446,
+   "n_forget": 36,
+   "forget": 0.41666666666666663,
+   "over_forget": 0.02097902097902098
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "full_redact",
+   "sessions": null,
+   "n_remember": 268,
+   "remember": 0.44029850746268656,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.017482517482517484
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "hybrid",
+   "sessions": null,
+   "n_remember": 268,
+   "remember": 0.6865671641791045,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.013986013986013986
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_drop",
+   "sessions": null,
+   "n_remember": 268,
+   "remember": 0.4253731343283582,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.02097902097902098
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_drop_repos",
+   "sessions": null,
+   "n_remember": 268,
+   "remember": 0.458955223880597,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.024475524475524476
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_evict_old",
+   "sessions": null,
+   "n_remember": 268,
+   "remember": 0.1417910447761194,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.16433566433566432
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_full",
+   "sessions": null,
+   "n_remember": 268,
+   "remember": 0.4291044776119403,
+   "n_forget": 36,
+   "forget": 0.4444444444444444,
+   "over_forget": 0.024475524475524476
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "rag",
+   "sessions": null,
+   "n_remember": 268,
+   "remember": 0.6529850746268657,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.027972027972027972
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "summary",
+   "sessions": null,
+   "n_remember": 268,
+   "remember": 0.08582089552238806,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.06293706293706294
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "window",
+   "sessions": null,
+   "n_remember": 268,
+   "remember": 0.026119402985074626,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.14685314685314685
+  }
+ ],
+ "points_common": [
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "facts_append",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.9534883720930233,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "facts_append_oracle",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 1.0,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "full",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.9534883720930233,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "full_redact",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.9767441860465116,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "hybrid",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.9767441860465116,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "rag",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.9767441860465116,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "summary",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 1.0,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "window",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.023255813953488372,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "facts_append",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.3953488372093023,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "facts_append_oracle",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.8604651162790697,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "full",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.6976744186046512,
+   "n_forget": 6,
+   "forget": 0.0,
+   "over_forget": 0.021739130434782608
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "full_redact",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.7441860465116279,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.021739130434782608
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "hybrid",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.7441860465116279,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "rag",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.813953488372093,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.021739130434782608
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "summary",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.13953488372093023,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "window",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.023255813953488372,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.043478260869565216
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "facts_append",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.4883720930232558,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.043478260869565216
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "facts_append_oracle",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.7441860465116279,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.043478260869565216
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "full",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.32558139534883723,
+   "n_forget": 6,
+   "forget": 0.6666666666666667,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "full_redact",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.32558139534883723,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.021739130434782608
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "hybrid",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.7906976744186046,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.021739130434782608
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_drop",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.37209302325581395,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.021739130434782608
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_drop_repos",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.4418604651162791,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.021739130434782608
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_evict_old",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.06976744186046512,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.34782608695652173
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_full",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.32558139534883723,
+   "n_forget": 6,
+   "forget": 0.6666666666666667,
+   "over_forget": 0.021739130434782608
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "rag",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.6511627906976745,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.043478260869565216
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "summary",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.046511627906976744,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.17391304347826086
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "window",
+   "sessions": null,
+   "n_remember": 43,
+   "remember": 0.023255813953488372,
+   "n_forget": 6,
+   "forget": 1.0,
+   "over_forget": 0.2391304347826087
+  }
+ ],
+ "points_by_sessions": [
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "facts_append",
+   "sessions": 5,
+   "n_remember": 14,
+   "remember": 1.0,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "facts_append",
+   "sessions": 20,
+   "n_remember": 13,
+   "remember": 0.9230769230769231,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "facts_append",
+   "sessions": 50,
+   "n_remember": 16,
+   "remember": 0.9375,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "facts_append_oracle",
+   "sessions": 5,
+   "n_remember": 14,
+   "remember": 1.0,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "facts_append_oracle",
+   "sessions": 20,
+   "n_remember": 13,
+   "remember": 1.0,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "facts_append_oracle",
+   "sessions": 50,
+   "n_remember": 16,
+   "remember": 1.0,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "full",
+   "sessions": 5,
+   "n_remember": 14,
+   "remember": 1.0,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "full",
+   "sessions": 20,
+   "n_remember": 13,
+   "remember": 1.0,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "full",
+   "sessions": 50,
+   "n_remember": 16,
+   "remember": 0.875,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "full_redact",
+   "sessions": 5,
+   "n_remember": 14,
+   "remember": 1.0,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "full_redact",
+   "sessions": 20,
+   "n_remember": 13,
+   "remember": 1.0,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "full_redact",
+   "sessions": 50,
+   "n_remember": 16,
+   "remember": 0.9375,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "hybrid",
+   "sessions": 5,
+   "n_remember": 14,
+   "remember": 1.0,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "hybrid",
+   "sessions": 20,
+   "n_remember": 13,
+   "remember": 1.0,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "hybrid",
+   "sessions": 50,
+   "n_remember": 16,
+   "remember": 0.9375,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "rag",
+   "sessions": 5,
+   "n_remember": 14,
+   "remember": 1.0,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "rag",
+   "sessions": 20,
+   "n_remember": 13,
+   "remember": 1.0,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "rag",
+   "sessions": 50,
+   "n_remember": 16,
+   "remember": 0.9375,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "summary",
+   "sessions": 5,
+   "n_remember": 14,
+   "remember": 1.0,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "summary",
+   "sessions": 20,
+   "n_remember": 13,
+   "remember": 1.0,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "summary",
+   "sessions": 50,
+   "n_remember": 16,
+   "remember": 1.0,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "window",
+   "sessions": 5,
+   "n_remember": 14,
+   "remember": 0.07142857142857142,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "window",
+   "sessions": 20,
+   "n_remember": 13,
+   "remember": 0.0,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "claude opus-5.5",
+   "strategy": "window",
+   "sessions": 50,
+   "n_remember": 16,
+   "remember": 0.0,
+   "n_forget": 2,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "facts_append",
+   "sessions": 5,
+   "n_remember": 86,
+   "remember": 0.45348837209302323,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "facts_append",
+   "sessions": 20,
+   "n_remember": 88,
+   "remember": 0.4659090909090909,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.010638297872340425
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "facts_append",
+   "sessions": 50,
+   "n_remember": 94,
+   "remember": 0.5531914893617021,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "facts_append_oracle",
+   "sessions": 5,
+   "n_remember": 86,
+   "remember": 0.8604651162790697,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "facts_append_oracle",
+   "sessions": 20,
+   "n_remember": 88,
+   "remember": 0.7840909090909091,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "facts_append_oracle",
+   "sessions": 50,
+   "n_remember": 94,
+   "remember": 0.7872340425531915,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.01
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "full",
+   "sessions": 5,
+   "n_remember": 86,
+   "remember": 0.7558139534883721,
+   "n_forget": 12,
+   "forget": 0.8333333333333334,
+   "over_forget": 0.06521739130434782
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "full",
+   "sessions": 20,
+   "n_remember": 88,
+   "remember": 0.6818181818181818,
+   "n_forget": 12,
+   "forget": 0.5,
+   "over_forget": 0.02127659574468085
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "full",
+   "sessions": 50,
+   "n_remember": 94,
+   "remember": 0.7021276595744681,
+   "n_forget": 12,
+   "forget": 0.25,
+   "over_forget": 0.02
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "full_redact",
+   "sessions": 5,
+   "n_remember": 86,
+   "remember": 0.8023255813953488,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.03260869565217391
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "full_redact",
+   "sessions": 20,
+   "n_remember": 88,
+   "remember": 0.7045454545454546,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.02127659574468085
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "full_redact",
+   "sessions": 50,
+   "n_remember": 94,
+   "remember": 0.7021276595744681,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.02
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "hybrid",
+   "sessions": 5,
+   "n_remember": 86,
+   "remember": 0.8488372093023255,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "hybrid",
+   "sessions": 20,
+   "n_remember": 88,
+   "remember": 0.6818181818181818,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "hybrid",
+   "sessions": 50,
+   "n_remember": 94,
+   "remember": 0.851063829787234,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "rag",
+   "sessions": 5,
+   "n_remember": 86,
+   "remember": 0.8837209302325582,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.010869565217391304
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "rag",
+   "sessions": 20,
+   "n_remember": 88,
+   "remember": 0.75,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.02127659574468085
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "rag",
+   "sessions": 50,
+   "n_remember": 94,
+   "remember": 0.776595744680851,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.01
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "summary",
+   "sessions": 5,
+   "n_remember": 86,
+   "remember": 0.3488372093023256,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "summary",
+   "sessions": 20,
+   "n_remember": 88,
+   "remember": 0.17045454545454544,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "summary",
+   "sessions": 50,
+   "n_remember": 94,
+   "remember": 0.14893617021276595,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.01
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "window",
+   "sessions": 5,
+   "n_remember": 86,
+   "remember": 0.08139534883720931,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.09782608695652174
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "window",
+   "sessions": 20,
+   "n_remember": 88,
+   "remember": 0.022727272727272728,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.09574468085106383
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "window",
+   "sessions": 50,
+   "n_remember": 94,
+   "remember": 0.0,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.05
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "facts_append",
+   "sessions": 5,
+   "n_remember": 86,
+   "remember": 0.37209302325581395,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.043478260869565216
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "facts_append",
+   "sessions": 20,
+   "n_remember": 88,
+   "remember": 0.32954545454545453,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0425531914893617
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "facts_append",
+   "sessions": 50,
+   "n_remember": 94,
+   "remember": 0.4148936170212766,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.03
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "facts_append_oracle",
+   "sessions": 5,
+   "n_remember": 86,
+   "remember": 0.7790697674418605,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.010869565217391304
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "facts_append_oracle",
+   "sessions": 20,
+   "n_remember": 88,
+   "remember": 0.6818181818181818,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.010638297872340425
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "facts_append_oracle",
+   "sessions": 50,
+   "n_remember": 94,
+   "remember": 0.6595744680851063,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.01
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "full",
+   "sessions": 5,
+   "n_remember": 86,
+   "remember": 0.6511627906976745,
+   "n_forget": 12,
+   "forget": 0.0,
+   "over_forget": 0.043478260869565216
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "full",
+   "sessions": 20,
+   "n_remember": 88,
+   "remember": 0.36363636363636365,
+   "n_forget": 12,
+   "forget": 0.5833333333333333,
+   "over_forget": 0.02127659574468085
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "full",
+   "sessions": 50,
+   "n_remember": 94,
+   "remember": 0.30851063829787234,
+   "n_forget": 12,
+   "forget": 0.6666666666666667,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "full_redact",
+   "sessions": 5,
+   "n_remember": 86,
+   "remember": 0.6511627906976745,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.021739130434782608
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "full_redact",
+   "sessions": 20,
+   "n_remember": 88,
+   "remember": 0.3522727272727273,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.010638297872340425
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "full_redact",
+   "sessions": 50,
+   "n_remember": 94,
+   "remember": 0.32978723404255317,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.02
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "hybrid",
+   "sessions": 5,
+   "n_remember": 86,
+   "remember": 0.7674418604651163,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.010869565217391304
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "hybrid",
+   "sessions": 20,
+   "n_remember": 88,
+   "remember": 0.6136363636363636,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.010638297872340425
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "hybrid",
+   "sessions": 50,
+   "n_remember": 94,
+   "remember": 0.6808510638297872,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.02
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_drop",
+   "sessions": 5,
+   "n_remember": 86,
+   "remember": 0.6046511627906976,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.043478260869565216
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_drop",
+   "sessions": 20,
+   "n_remember": 88,
+   "remember": 0.3522727272727273,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.02127659574468085
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_drop",
+   "sessions": 50,
+   "n_remember": 94,
+   "remember": 0.32978723404255317,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_drop_repos",
+   "sessions": 5,
+   "n_remember": 86,
+   "remember": 0.6511627906976745,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.03260869565217391
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_drop_repos",
+   "sessions": 20,
+   "n_remember": 88,
+   "remember": 0.36363636363636365,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0425531914893617
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_drop_repos",
+   "sessions": 50,
+   "n_remember": 94,
+   "remember": 0.3723404255319149,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_evict_old",
+   "sessions": 5,
+   "n_remember": 86,
+   "remember": 0.26744186046511625,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.10869565217391304
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_evict_old",
+   "sessions": 20,
+   "n_remember": 88,
+   "remember": 0.07954545454545454,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.2127659574468085
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_evict_old",
+   "sessions": 50,
+   "n_remember": 94,
+   "remember": 0.0851063829787234,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.17
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_full",
+   "sessions": 5,
+   "n_remember": 86,
+   "remember": 0.6511627906976745,
+   "n_forget": 12,
+   "forget": 0.0,
+   "over_forget": 0.05434782608695652
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_full",
+   "sessions": 20,
+   "n_remember": 88,
+   "remember": 0.32954545454545453,
+   "n_forget": 12,
+   "forget": 0.5833333333333333,
+   "over_forget": 0.02127659574468085
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_full",
+   "sessions": 50,
+   "n_remember": 94,
+   "remember": 0.3191489361702128,
+   "n_forget": 12,
+   "forget": 0.75,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "rag",
+   "sessions": 5,
+   "n_remember": 86,
+   "remember": 0.7093023255813954,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "rag",
+   "sessions": 20,
+   "n_remember": 88,
+   "remember": 0.6704545454545454,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.031914893617021274
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "rag",
+   "sessions": 50,
+   "n_remember": 94,
+   "remember": 0.5851063829787234,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.05
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "summary",
+   "sessions": 5,
+   "n_remember": 86,
+   "remember": 0.16279069767441862,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.05434782608695652
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "summary",
+   "sessions": 20,
+   "n_remember": 88,
+   "remember": 0.07954545454545454,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0851063829787234
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "summary",
+   "sessions": 50,
+   "n_remember": 94,
+   "remember": 0.02127659574468085,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.05
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "window",
+   "sessions": 5,
+   "n_remember": 86,
+   "remember": 0.08139534883720931,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.13043478260869565
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "window",
+   "sessions": 20,
+   "n_remember": 88,
+   "remember": 0.0,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.18085106382978725
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "window",
+   "sessions": 50,
+   "n_remember": 94,
+   "remember": 0.0,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.13
+  }
+ ],
+ "answer_latency_s": {
+  "full": {
+   "5": 1.1556395957630063,
+   "20": 4.567037679446587,
+   "50": 57.5463447879918
+  },
+  "kv_full": {
+   "5": 0.5683844536001825,
+   "20": 0.743085361723258,
+   "50": 1.684150216610159
+  }
+ }
+}
