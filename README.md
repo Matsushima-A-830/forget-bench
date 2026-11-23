@@ -10,7 +10,8 @@ LLMエージェントの**メモリ戦略**(要約・追記・RAG・KVキャッ�
 クラウドLLM(Claude、`claude -p` 経由)とローカルLLM(Ollama / Hugging Face transformers)の両方で動かし、
 「テキストを操作するメモリ」と「推論中のKVキャッシュそのものを操作するメモリ」を同じ物差しで測る。
 
-> ステータス: **第3週(KV層)まで完了**(結果: [results/2026-11-21-week3-kv.md](results/2026-11-21-week3-kv.md))。バックエンド `ollama` / `claude` / `hf`、テキスト層の全戦略
+> ステータス: **第4週(見せる)を作業中**。図・デモ UI・スライドの下書きまで(図: [results/2026-11-23-week4-figures.md](results/2026-11-23-week4-figures.md)、
+> KV 層の結果: [results/2026-11-21-week3-kv.md](results/2026-11-21-week3-kv.md))。バックエンド `ollama` / `claude` / `hf`、テキスト層の全戦略
 > (`full` / `full_redact` / `window` / `summary` / `facts_append` / `rag` / `hybrid`)と KV 層の戦略
 > (`kv_full` / `kv_drop` / `kv_drop_repos` / `kv_evict_old`)、規模スイープが動く。
 > 進め方は [docs/roadmap.md](docs/roadmap.md) を参照。
@@ -32,6 +33,8 @@ FORGET_BENCH_GPU=1 uv run pytest tests/test_kv_gpu.py -s   # 実モデルで dro
 uv run forget-bench run configs/sweep_hf.yaml    # hf(テキスト層 + KV層)の規模スイープ
 uv run forget-bench report runs/<run_id>         # 表を再表示
 uv run forget-bench scenario --seed 1000         # dev 分割のシナリオを1つ見る
+uv sync --extra viz && uv run forget-bench figures   # 発表用の図(results/figures/)
+uv run forget-bench demo configs/demo_hf.yaml    # デモチャット UI(http://127.0.0.1:8765/)
 ```
 
 ## 何を測るか
@@ -49,6 +52,10 @@ uv run forget-bench scenario --seed 1000         # dev 分割のシナリオを1
 - 追記のみメモリは「覚える力」最強・「忘れる力」最弱になり、トレードオフ図の両端に来る。
 - 要約メモリは削除要求後も要約文に情報が残り、漏洩しやすい。
 - KVキャッシュの該当範囲を切除する方法は、テキストを経由しないぶん「本当に忘れる」が、位置補正(RoPE再回転)を誤ると全体が崩れる。
+
+> dev 分割での検証の途中経過: 1つ目の仮説は外れた(`facts_append` は墓標で削除するので忘れる力 100%。漏れたのは削除要求を無視する
+> `full` / `kv_full` だけ)。KV の切除は漏洩 0% だったが、このシナリオの小さな切除では naive drop でも崩れなかった。
+> 詳細と分母は [results/2026-11-23-week4-figures.md](results/2026-11-23-week4-figures.md)。test 分割ではまだ評価していない。
 
 ## 比較するメモリ戦略
 
@@ -105,6 +112,8 @@ forget-bench/
 │   └── runner.py          #   実験ランナー
 ├── configs/               # 実験設定(YAML)
 ├── tests/
+├── talk/                # 発表スライド(Marp、5分版/10分版)と台本
+├── results/             # 結果のメモと図(results/figures/)
 └── runs/                  # 実験出力(git管理外。要約だけ results/ に残す)
 ```
 
