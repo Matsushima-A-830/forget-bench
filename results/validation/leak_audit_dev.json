@@ -1,0 +1,216 @@
+[
+ {
+  "run": "20261116-073132-sweep-claude-ja1",
+  "per_strategy": {
+   "facts_append": {
+    "requests": 6,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "facts_append_oracle": {
+    "requests": 6,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "full": {
+    "requests": 6,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "full_redact": {
+    "requests": 6,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "hybrid": {
+    "requests": 6,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "rag": {
+    "requests": 6,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "summary": {
+    "requests": 6,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "window": {
+    "requests": 6,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   }
+  },
+  "examples": []
+ },
+ {
+  "run": "20261115-205757-sweep-ollama",
+  "per_strategy": {
+   "facts_append": {
+    "requests": 36,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "facts_append_oracle": {
+    "requests": 36,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "full": {
+    "requests": 36,
+    "strict": 17,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "full_redact": {
+    "requests": 36,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "hybrid": {
+    "requests": 36,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "rag": {
+    "requests": 36,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "summary": {
+    "requests": 36,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "window": {
+    "requests": 36,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   }
+  },
+  "examples": []
+ },
+ {
+  "run": "20261121-183356-sweep-hf",
+  "per_strategy": {
+   "facts_append": {
+    "requests": 36,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "facts_append_oracle": {
+    "requests": 36,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "full": {
+    "requests": 36,
+    "strict": 21,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "full_redact": {
+    "requests": 36,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "hybrid": {
+    "requests": 36,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "kv_drop": {
+    "requests": 36,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "kv_drop_repos": {
+    "requests": 36,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "kv_evict_old": {
+    "requests": 36,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "kv_full": {
+    "requests": 36,
+    "strict": 20,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "rag": {
+    "requests": 36,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "summary": {
+    "requests": 36,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   },
+   "window": {
+    "requests": 36,
+    "strict": 0,
+    "loose_full_only": 0,
+    "partial_only": 0,
+    "rescore_mismatch": 0
+   }
+  },
+  "examples": []
+ }
+]
