@@ -63,6 +63,10 @@ class Retriever:
                 self.bm25.remove(doc.id)
                 self.removed += 1
 
+    def snapshot(self) -> dict[str, Any]:
+        return {"kind": "docs", "removed": self.removed, "mode": self.mode, "top_k": self.top_k, "items": [
+            {"id": d.id, "session": d.session, "text": d.text} for d in sorted(self.docs.values(), key=lambda d: d.index)]}
+
     def search(self, query: str) -> list[Doc]:
         if not self.docs:
             return []
@@ -120,3 +124,6 @@ class RagMemory:
     def stats(self) -> MemoryStats:
         docs = self.retriever.docs.values()
         return MemoryStats(items=len(docs), chars=sum(len(d.text) for d in docs), deleted_items=self.retriever.removed)
+
+    def snapshot(self) -> dict[str, Any]:
+        return self.retriever.snapshot()

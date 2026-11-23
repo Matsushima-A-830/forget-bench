@@ -45,6 +45,11 @@ def main(argv: list[str] | None = None) -> int:
     pf.add_argument("config", nargs="?", default="configs/figures.yaml")
     pf.add_argument("--out", default="results/figures")
 
+    pd = sub.add_parser("demo", help="デモチャット UI をローカルで起動する(127.0.0.1)")
+    pd.add_argument("config", nargs="?", default="configs/demo_hf.yaml")
+    pd.add_argument("--port", type=int, default=8765)
+    pd.add_argument("--backend", default=None, help="バックエンドを差し替える(例: dummy で UI だけ確かめる。KV 層は外れる)")
+
     ps = sub.add_parser("scenario", help="シナリオを1つ生成してJSONで表示する(dev分割のみ)")
     ps.add_argument("--seed", type=int, required=True)
     ps.add_argument("--lang", choices=["ja", "en"], default="ja")
@@ -86,6 +91,10 @@ def main(argv: list[str] | None = None) -> int:
         from forget_bench.figures import make_figures
 
         print(f"出力: {make_figures(args.config, args.out)}")
+    elif args.cmd == "demo":
+        from forget_bench.demo.server import build_session, load_demo_config, serve
+
+        serve(build_session(load_demo_config(args.config), backend_override=args.backend), port=args.port)
     elif args.cmd == "scenario":
         if split_of(args.seed) != "dev":
             # test 分割の中身を見ながらプロンプトを調整しないため(AGENTS.md 絶対ルール4)

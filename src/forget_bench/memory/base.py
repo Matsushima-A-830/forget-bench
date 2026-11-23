@@ -35,6 +35,8 @@ class MemoryStrategy(Protocol):
 
     def stats(self) -> MemoryStats: ...
 
+    # 任意: snapshot() -> dict はメモリの中身を JSON にできる形で返す(デモ UI の表示用。ベンチマークでは使わない)。
+    # 形式は memory/snapshot.py。
     # 任意: answer(question) -> Generation を持つ戦略は、build_context の文脈をバックエンドに渡す代わりに
     # 自分で回答を生成する(KV 層)。ランナーは build_context を記録用に使う。
 

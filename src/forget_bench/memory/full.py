@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from forget_bench.memory.base import StrategyContext, register_strategy
+from forget_bench.memory.snapshot import turns_snapshot
 from forget_bench.memory.render import question_text, render_turns
 from forget_bench.types import ForgetRequest, MemoryStats, Message, Question, Turn
 
@@ -32,3 +33,6 @@ class FullMemory:
 
     def stats(self) -> MemoryStats:
         return MemoryStats(items=len(self.turns), chars=sum(len(t.text) for t in self.turns))
+
+    def snapshot(self) -> dict[str, Any]:
+        return turns_snapshot(self.turns, self.ctx.lang)

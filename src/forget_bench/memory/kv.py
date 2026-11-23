@@ -36,6 +36,7 @@ class _KVMemory:
         self._current_session: int | None = None
         self.peak_vram_mb = 0.0
         self._deleted = 0  # 切除した発話数
+        self.drop_log: list[dict[str, Any]] = []  # 切除の記録(デモの表示用): 切除した範囲の元の位置と本文
 
     def observe(self, turn: Turn) -> None:
         text = turn.text
@@ -52,7 +53,14 @@ class _KVMemory:
         pass
 
     def _drop(self, span_ids: list[str], *, repos: bool) -> None:
+        targets = set(span_ids)
+        removed = [{"id": s.id, "start": s.start, "end": s.end, "role": self.messages[s.id].role,
+                    "text": self.messages[s.id].content, "session": self.sessions.get(s.id)}
+                   for s in self.handle.spans if s.id in targets and s.id in self.messages]
+        length_before = self.handle.length
         self.kv.drop(self.handle, span_ids, repos=repos)
+        self.drop_log.append({"spans": removed, "repos": repos, "length_before": length_before,
+                              "length_after": self.handle.length})
         for sid in span_ids:
             self.messages.pop(sid, None)
             self.sessions.pop(sid, None)
@@ -81,6 +89,14 @@ class _KVMemory:
         """KV に残っている内容をテキストで表したもの(記録・確認用。回答は answer() が KV から生成する)。"""
         kept = [self.messages[s.id] for s in self.handle.spans if s.id in self.messages]
         return [Message("system", self.ctx.system_prompt), *kept, *self._prompt(question)]
+
+    def snapshot(self) -> dict[str, Any]:
+        """KV の中身: トークン範囲ごとの位置と本文、これまでの切除の記録。"""
+        spans = [{"id": s.id, "start": s.start, "end": s.end, "role": self.messages[s.id].role if s.id in self.messages
+                  else "system", "text": self.messages[s.id].content if s.id in self.messages else self.ctx.system_prompt,
+                  "session": self.sessions.get(s.id)} for s in self.handle.spans]
+        return {"kind": "kv", "length": self.handle.length, "spans": spans, "drops": self.drop_log,
+                "dropped_tokens": self.handle.dropped_tokens, "prefill_tokens": self.handle.prefill_tokens}
 
     def stats(self) -> MemoryStats:
         return MemoryStats(

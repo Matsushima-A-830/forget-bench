@@ -224,3 +224,8 @@ class FactsAppendMemory:
             llm_calls=self._llm_calls,
             errors=self._errors,
         )
+
+    def snapshot(self) -> dict[str, Any]:
+        return {"kind": "facts", "pending_turns": len(self.buffer), "items": [
+            {"seq": r.seq, "session": r.session, "key": r.key, "value": r.value, "deleted": r.deleted,
+             "source": r.source_turn_id} for r in self.records]}

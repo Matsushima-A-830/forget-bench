@@ -65,3 +65,6 @@ class HybridMemory:
             llm_calls=f.llm_calls,
             errors=f.errors,
         )
+
+    def snapshot(self) -> dict[str, Any]:
+        return {"kind": "composite", "parts": [self.facts.snapshot(), self.retriever.snapshot()]}

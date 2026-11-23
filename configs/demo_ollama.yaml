@@ -1,0 +1,20 @@
+# デモチャット UI のテキスト層だけ版(GPU の KV 操作なし)。forget-bench demo configs/demo_ollama.yaml
+backend:
+  name: ollama
+  params:
+    model: qwen2.5:7b-instruct
+    num_ctx: 32768
+lang: ja
+max_tokens: 160
+primary: full_redact
+strategies:
+  - name: full
+  - name: full_redact
+  - name: summary
+  - name: facts_append
+    params: {extract_every: session}
+  - name: rag
+  - name: hybrid
+    params: {extract_every: session}
+retrieval:
+  embedder: {name: ollama, params: {model: bge-m3}}
