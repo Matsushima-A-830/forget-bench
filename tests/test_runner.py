@@ -155,3 +155,24 @@ def test_report_from_logs_matches_summary(tmp_path: Path) -> None:
     assert "| full | 2 |" in table and "| full | 3 |" in table
     one = metrics_from_logs(out, {"dev-1000-ja-s2"})
     assert {m["sessions"] for m in one} == {2}
+
+
+def test_is_degenerate() -> None:
+    from forget_bench.runner import is_degenerate
+
+    assert is_degenerate("缦oshi" * 40)
+    assert is_degenerate("ああああ" * 30)
+    assert not is_degenerate("あなたの電話番号は 090-1234-5678 です。")
+    assert not is_degenerate("住所: 金沢 / 予算: 980万円 / 締め切り: 7月13日 / 担当者: 斎藤さん / 猫の名前: ミゾレ。" * 2)
+    assert not is_degenerate(None)
+
+
+def test_run_stops_on_degenerate_streak(tmp_path: Path) -> None:
+    from forget_bench.runner import DegenerateOutputError
+
+    data = dict(CONFIG, backend={"name": "dummy", "params": {"mode": "constant", "text": "缦oshi" * 40}})
+    with pytest.raises(DegenerateOutputError):
+        run(_write(tmp_path, data), out_root=tmp_path / "runs")
+    out = next((tmp_path / "runs").iterdir())
+    meta = json.loads((out / "meta.json").read_text())
+    assert meta["status"] == "failed" and "DegenerateOutputError" in meta["error"]
