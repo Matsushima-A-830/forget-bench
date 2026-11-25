@@ -176,7 +176,11 @@ def _place_labels(ax: Any, items: list[tuple[str, float, float]], fontsize: floa
     pt = fig.dpi / 72  # 1pt あたりのピクセル
     char_w, h = fontsize * 0.62 * pt, fontsize * 1.25 * pt
     offsets = [10, -18, 26, -34, 42, -50, 58, -66, 74]
-    placed: list[tuple[float, float, float, float]] = []
+    # 点そのものも障害物にする(近い2点で、ラベルが隣の点に寄り添って取り違えて読まれるのを防ぐ)
+    r = 6 * pt
+    placed: list[tuple[float, float, float, float]] = [
+        (px - r, py - r, px + r, py + r) for px, py in (to_px((x, y)) for _, x, y in items)
+    ]
     for text, x, y in sorted(items, key=lambda t: (t[2], t[1])):
         px, py = to_px((x, y))
         w = len(text) * char_w

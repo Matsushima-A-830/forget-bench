@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import platform
+import re
 import subprocess
 import sys
 import threading
@@ -31,6 +32,24 @@ from forget_bench.scenario import generate
 from forget_bench.scoring import score_answer
 from forget_bench.scoring.summary import RequestRow, ScoreRow, summarize
 from forget_bench.types import ForgetRequest, Scenario
+
+# 壊れた生成の検出。2026-11-24 の hf test run で、途中からモデルが同じ断片を最大長まで繰り返すだけになり、
+# 以降の約 3,000 リクエストがすべて壊れたまま完走した(results/2026-11-23-week4-validation.md)。
+# 繰り返しが連続したら run を失敗として止め、壊れた出力を採点結果に混ぜない
+_REPEAT = re.compile(r"(.{1,16}?)\1{7,}", re.DOTALL)
+DEGENERATE_STREAK = 10
+
+
+class DegenerateOutputError(RuntimeError):
+    """同じ断片の繰り返しだけの出力が続いた(バックエンドの状態が壊れた疑い)。"""
+
+
+def is_degenerate(text: str | None) -> bool:
+    """出力が短い断片の繰り返しで大半を占めるか(1回だけなら正当な出力でもありうる)。"""
+    if not text or len(text) < 64:
+        return False
+    covered = sum(len(m.group(0)) for m in _REPEAT.finditer(text))
+    return covered >= 0.6 * len(text)
 
 
 def _json_default(o: Any) -> Any:
@@ -254,11 +273,18 @@ def run(
     score_rows: list[ScoreRow] = []
 
     lock = threading.Lock()
+    streak = 0
 
     def sink(row: RequestRow) -> None:
+        nonlocal streak
         with lock:
             request_rows.append(row)
             requests_w.write(row)
+            streak = streak + 1 if is_degenerate(row.output) else 0
+            if streak >= DEGENERATE_STREAK:
+                raise DegenerateOutputError(
+                    f"繰り返しだけの出力が {streak} 回続いた(最後: {row.scenario_id} {row.strategy} {row.purpose})。"
+                    "バックエンドの状態が壊れた疑いがあるので止める")
 
     embedder: Embedder | None = None
     try:

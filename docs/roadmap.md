@@ -43,6 +43,15 @@
   - スライドの下書き(`talk/slides.md` 10分版・`talk/slides-5min.md` 5分版)と台本(`talk/script.md`)まで。
     PDF への書き出しと練習は未(人間がやる)
 
+## 第4週の追加検証(発表の主張を支えるもの)
+
+- [x] test 分割での最終評価(ollama・hf。設定は dev のまま `configs/sweep_*_test.yaml`)
+  - hf の1回目の run は途中でモデルの出力が壊れたため回し直した。ランナーに壊れた出力の連続を検出して止める仕組みを追加
+  - Claude の test 分割は未実施(約 680 リクエスト。人間の確認待ち)
+- [x] 揺れの幅: 各点の Clopper–Pearson 区間と、戦略の差の対応ブートストラップ(`scripts/uncertainty.py`)
+- [x] 漏洩判定の取りこぼし点検: 取りこぼし 0 件(`scripts/leak_audit.py`)
+- 結果: results/2026-11-23-week4-validation.md
+
 ## 予備(時間があれば)
 
 - KV切除を Ollama(llama.cpp)側で再現できるか

@@ -40,7 +40,7 @@ style: |
 
 ![h:430](../results/figures/tradeoff_all.png)
 
-<span class="small">results/2026-11-23-week4-figures.md。claude は1シナリオ(削除要求 6 件)</span>
+<span class="small">dev 分割。results/2026-11-23-week4-figures.md。claude は1シナリオ(削除要求 6 件)。test 分割の確認は results/2026-11-23-week4-validation.md</span>
 
 <!-- 1:20–2:00 -->
 
@@ -49,9 +49,10 @@ style: |
 ## 仮説は外れた: 忘れる力は「消し方」で決まる
 
 - 仮説「追記のみのメモリは忘れる力が最弱」→ **`facts_append` は 100%**(墓標を立てる)
-- 漏れたのは削除要求を無視する `full` / `kv_full` だけ(ollama 7B `full` 53%、hf 3B `full` 42%、`kv_full` 44%)
-- 伏字・索引から削除・KV 切除は、層によらず **すべて 100%**
-- 差は覚える力に出る(hf 3B: `hybrid` 69%、`rag` 65%、`kv_drop_repos` 46%、`full_redact` 44%)
+- 漏れたのは削除要求に反応しない `full` / `kv_full` だけ(ollama 7B `full` 53%、hf 3B `full` 42%、`kv_full` 44%)
+- 値を決定的に消す戦略(伏字・索引から削除・墓標・KV 切除)は、層によらず **すべて 100%**。test 分割(別の seed)でも漏洩 0
+- test では、LLM に要約を書き直させて消す `summary` が1件漏れた
+- 差は覚える力に出る(hf 3B: 検索 65〜69% > 全文・伏字・KV 切除 43〜46%。dev・test とも)
 
 <!-- 2:00–2:50 -->
 
@@ -59,7 +60,7 @@ style: |
 
 ## KV 切除: 伏字と同じくらい効き、速い
 
-- `kv_drop_repos` は全規模で漏洩 0%。`full_redact` と **340 問中 321 問で正誤一致**
+- `kv_drop_repos` は全規模で漏洩 0%(dev・test)。`full_redact` と **340 問中 321 問で正誤一致**
 - 位置補正なしの naive drop も崩れなかった(切除は1シナリオ 45〜57 トークン。大きく切る条件は未測定)
 - KV を使い回すと、50 セッションで回答1回 **57.55 秒 → 1.68 秒**
 
@@ -79,10 +80,10 @@ style: |
 
 ## まとめ
 
-- **忘れる力は消し方の確実さで決まり、層は問わない**
+- **忘れる力は消し方の確実さで決まり、層は問わない**。モデルに頼まずメモリの側で消す
 - **覚える力はモデルの大きさと文脈の絞り方で決まる**
 - KV 切除は伏字と同等、KV の使い回しで速い
-- まだ: test 分割での最終評価、Claude の繰り返し、大きく切る条件
+- まだ: Claude の test 分割と繰り返し、大きく切る条件
 
 <span class="small">数値はすべて runs/ の生ログから。github.com/Matsushima-A-830/forget-bench</span>
 
