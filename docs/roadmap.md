@@ -45,9 +45,12 @@
 
 ## 第4週の追加検証(発表の主張を支えるもの)
 
-- [ ] test 分割での最終評価(ollama・hf。設定は dev のまま `configs/sweep_*_test.yaml`。Claude は利用枠の確認待ち)
-- [ ] 揺れの幅: 問題単位のブートストラップで信頼区間を付ける(新たな生成なし)
-- [ ] 漏洩判定の取りこぼし点検: 表記を崩した漏洩・部分漏洩を既存の回答ログで洗う(新たな生成なし)
+- [x] test 分割での最終評価(ollama・hf。設定は dev のまま `configs/sweep_*_test.yaml`)
+  - hf の1回目の run は途中でモデルの出力が壊れたため回し直した。ランナーに壊れた出力の連続を検出して止める仕組みを追加
+  - Claude の test 分割は未実施(約 680 リクエスト。人間の確認待ち)
+- [x] 揺れの幅: 各点の Clopper–Pearson 区間と、戦略の差の対応ブートストラップ(`scripts/uncertainty.py`)
+- [x] 漏洩判定の取りこぼし点検: 取りこぼし 0 件(`scripts/leak_audit.py`)
+- 結果: results/2026-11-23-week4-validation.md
 
 ## 予備(時間があれば)
 

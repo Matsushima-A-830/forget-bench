@@ -10,7 +10,7 @@ LLMエージェントの**メモリ戦略**(要約・追記・RAG・KVキャッ�
 クラウドLLM(Claude、`claude -p` 経由)とローカルLLM(Ollama / Hugging Face transformers)の両方で動かし、
 「テキストを操作するメモリ」と「推論中のKVキャッシュそのものを操作するメモリ」を同じ物差しで測る。
 
-> ステータス: **第4週(見せる)を作業中**。図・デモ UI・スライドの下書きまで(図: [results/2026-11-23-week4-figures.md](results/2026-11-23-week4-figures.md)、
+> ステータス: **第4週(見せる)を作業中**。図・デモ UI・スライドの下書き・test 分割での最終評価(ollama・hf)まで(図: [results/2026-11-23-week4-figures.md](results/2026-11-23-week4-figures.md)、検証: [results/2026-11-23-week4-validation.md](results/2026-11-23-week4-validation.md)、
 > KV 層の結果: [results/2026-11-21-week3-kv.md](results/2026-11-21-week3-kv.md))。バックエンド `ollama` / `claude` / `hf`、テキスト層の全戦略
 > (`full` / `full_redact` / `window` / `summary` / `facts_append` / `rag` / `hybrid`)と KV 層の戦略
 > (`kv_full` / `kv_drop` / `kv_drop_repos` / `kv_evict_old`)、規模スイープが動く。
@@ -53,9 +53,15 @@ uv run forget-bench demo configs/demo_hf.yaml    # デモチャット UI(http://
 - 要約メモリは削除要求後も要約文に情報が残り、漏洩しやすい。
 - KVキャッシュの該当範囲を切除する方法は、テキストを経由しないぶん「本当に忘れる」が、位置補正(RoPE再回転)を誤ると全体が崩れる。
 
-> dev 分割での検証の途中経過: 1つ目の仮説は外れた(`facts_append` は墓標で削除するので忘れる力 100%。漏れたのは削除要求を無視する
-> `full` / `kv_full` だけ)。KV の切除は漏洩 0% だったが、このシナリオの小さな切除では naive drop でも崩れなかった。
-> 詳細と分母は [results/2026-11-23-week4-figures.md](results/2026-11-23-week4-figures.md)。test 分割ではまだ評価していない。
+> 検証の途中経過(dev 分割と、ollama・hf の test 分割):
+>
+> - 1つ目の仮説は外れた。`facts_append` は墓標で削除するので、忘れる力は 100%
+> - 値を決定的に消す戦略(伏字・索引から削除・墓標・KV 切除)は、dev・test とも漏洩 0 件
+> - 漏れたのは削除要求に反応しない戦略(`full` / `kv_full`、test では容量で落とすだけの `kv_evict_old`)と、
+>   test で1件、LLM に要約を書き直させて消す `summary`。2つ目の仮説の方向
+> - KV の切除は漏洩 0% だったが、このシナリオの小さな切除では naive drop でも崩れなかった
+> - 詳細・分母・95% 区間は [results/2026-11-23-week4-figures.md](results/2026-11-23-week4-figures.md) と
+>   [results/2026-11-23-week4-validation.md](results/2026-11-23-week4-validation.md)。Claude は dev の縮小版だけ
 
 ## 比較するメモリ戦略
 
