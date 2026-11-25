@@ -3,6 +3,6 @@ runs:
   - label: "ollama qwen2.5 7B"
     run: runs/20261123-211104-sweep-ollama-test    # 日英 × seed 100000–100002 × 5/20/50
   - label: "hf qwen2.5 3B"
-    run: runs/20261123-215807-sweep-hf-test        # 日英 × seed 100000–100002 × 5/20/50(KV 層を含む)
+    run: runs/20261125-231604-sweep-hf-test        # 回し直し(1回目の 20261123-215807 は途中で壊れたので使わない)。日英 × seed 100000–100002 × 5/20/50(KV 層を含む)
 common_scenarios: []
 line_strategies: [full, window, summary, facts_append, rag, hybrid, kv_full, kv_drop_repos]

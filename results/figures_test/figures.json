@@ -1,0 +1,862 @@
+{
+ "definitions": {
+  "remember": "current / historical / oneshot の質問をまとめた正答率",
+  "forget": "1 - 削除要求あたりの漏洩率",
+  "over_forget": "削除要求していない情報を「削除済み」と答えて外した率(current/historical/oneshot/aggregate)"
+ },
+ "config": "configs/figures_test.yaml",
+ "runs": {
+  "ollama qwen2.5 7B": {
+   "run_id": "20261123-211104-sweep-ollama-test",
+   "status": "completed",
+   "git_commit": "822a7bd92d3264b76c4a45688282cd491bb3ad30",
+   "git_dirty": false,
+   "model": "qwen2.5:7b-instruct",
+   "seeds": [
+    100000,
+    100001,
+    100002
+   ],
+   "sessions": [
+    5,
+    20,
+    50
+   ]
+  },
+  "hf qwen2.5 3B": {
+   "run_id": "20261125-231604-sweep-hf-test",
+   "status": "completed",
+   "git_commit": "6d4148147bff97cfef03fe37aa770c570e53790d",
+   "git_dirty": false,
+   "model": "Qwen/Qwen2.5-3B-Instruct",
+   "seeds": [
+    100000,
+    100001,
+    100002
+   ],
+   "sessions": [
+    5,
+    20,
+    50
+   ]
+  }
+ },
+ "common_scenarios": [],
+ "points_all": [
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "facts_append",
+   "sessions": null,
+   "n_remember": 262,
+   "remember": 0.48854961832061067,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "facts_append_oracle",
+   "sessions": null,
+   "n_remember": 262,
+   "remember": 0.7709923664122137,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.0035714285714285713
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "full",
+   "sessions": null,
+   "n_remember": 262,
+   "remember": 0.7709923664122137,
+   "n_forget": 36,
+   "forget": 0.5,
+   "over_forget": 0.025
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "full_redact",
+   "sessions": null,
+   "n_remember": 262,
+   "remember": 0.767175572519084,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.02142857142857143
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "hybrid",
+   "sessions": null,
+   "n_remember": 262,
+   "remember": 0.8282442748091603,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.0035714285714285713
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "rag",
+   "sessions": null,
+   "n_remember": 262,
+   "remember": 0.8396946564885496,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.010714285714285714
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "summary",
+   "sessions": null,
+   "n_remember": 262,
+   "remember": 0.3473282442748092,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "window",
+   "sessions": null,
+   "n_remember": 262,
+   "remember": 0.06870229007633588,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.05357142857142857
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "facts_append",
+   "sessions": null,
+   "n_remember": 262,
+   "remember": 0.29389312977099236,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.010714285714285714
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "facts_append_oracle",
+   "sessions": null,
+   "n_remember": 262,
+   "remember": 0.7366412213740458,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "full",
+   "sessions": null,
+   "n_remember": 262,
+   "remember": 0.48091603053435117,
+   "n_forget": 36,
+   "forget": 0.38888888888888884,
+   "over_forget": 0.010714285714285714
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "full_redact",
+   "sessions": null,
+   "n_remember": 262,
+   "remember": 0.45038167938931295,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.025
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "hybrid",
+   "sessions": null,
+   "n_remember": 262,
+   "remember": 0.683206106870229,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_drop",
+   "sessions": null,
+   "n_remember": 262,
+   "remember": 0.4312977099236641,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.017857142857142856
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_drop_repos",
+   "sessions": null,
+   "n_remember": 262,
+   "remember": 0.4541984732824427,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.010714285714285714
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_evict_old",
+   "sessions": null,
+   "n_remember": 262,
+   "remember": 0.13358778625954199,
+   "n_forget": 36,
+   "forget": 0.9444444444444444,
+   "over_forget": 0.12857142857142856
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_full",
+   "sessions": null,
+   "n_remember": 262,
+   "remember": 0.46946564885496184,
+   "n_forget": 36,
+   "forget": 0.36111111111111116,
+   "over_forget": 0.010714285714285714
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "rag",
+   "sessions": null,
+   "n_remember": 262,
+   "remember": 0.6603053435114504,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.039285714285714285
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "summary",
+   "sessions": null,
+   "n_remember": 262,
+   "remember": 0.09923664122137404,
+   "n_forget": 36,
+   "forget": 0.9722222222222222,
+   "over_forget": 0.07857142857142857
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "window",
+   "sessions": null,
+   "n_remember": 262,
+   "remember": 0.05725190839694656,
+   "n_forget": 36,
+   "forget": 1.0,
+   "over_forget": 0.11071428571428571
+  }
+ ],
+ "points_common": [],
+ "points_by_sessions": [
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "facts_append",
+   "sessions": 5,
+   "n_remember": 88,
+   "remember": 0.48863636363636365,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "facts_append",
+   "sessions": 20,
+   "n_remember": 92,
+   "remember": 0.4891304347826087,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "facts_append",
+   "sessions": 50,
+   "n_remember": 82,
+   "remember": 0.4878048780487805,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "facts_append_oracle",
+   "sessions": 5,
+   "n_remember": 88,
+   "remember": 0.8409090909090909,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.010638297872340425
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "facts_append_oracle",
+   "sessions": 20,
+   "n_remember": 92,
+   "remember": 0.6739130434782609,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "facts_append_oracle",
+   "sessions": 50,
+   "n_remember": 82,
+   "remember": 0.8048780487804879,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "full",
+   "sessions": 5,
+   "n_remember": 88,
+   "remember": 0.8181818181818182,
+   "n_forget": 12,
+   "forget": 0.6666666666666667,
+   "over_forget": 0.02127659574468085
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "full",
+   "sessions": 20,
+   "n_remember": 92,
+   "remember": 0.7282608695652174,
+   "n_forget": 12,
+   "forget": 0.6666666666666667,
+   "over_forget": 0.030612244897959183
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "full",
+   "sessions": 50,
+   "n_remember": 82,
+   "remember": 0.7682926829268293,
+   "n_forget": 12,
+   "forget": 0.16666666666666663,
+   "over_forget": 0.022727272727272728
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "full_redact",
+   "sessions": 5,
+   "n_remember": 88,
+   "remember": 0.8295454545454546,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.010638297872340425
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "full_redact",
+   "sessions": 20,
+   "n_remember": 92,
+   "remember": 0.7391304347826086,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.02040816326530612
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "full_redact",
+   "sessions": 50,
+   "n_remember": 82,
+   "remember": 0.7317073170731707,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.03409090909090909
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "hybrid",
+   "sessions": 5,
+   "n_remember": 88,
+   "remember": 0.9204545454545454,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.010638297872340425
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "hybrid",
+   "sessions": 20,
+   "n_remember": 92,
+   "remember": 0.75,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "hybrid",
+   "sessions": 50,
+   "n_remember": 82,
+   "remember": 0.8170731707317073,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "rag",
+   "sessions": 5,
+   "n_remember": 88,
+   "remember": 0.9204545454545454,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.010638297872340425
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "rag",
+   "sessions": 20,
+   "n_remember": 92,
+   "remember": 0.7282608695652174,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.01020408163265306
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "rag",
+   "sessions": 50,
+   "n_remember": 82,
+   "remember": 0.8780487804878049,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.011363636363636364
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "summary",
+   "sessions": 5,
+   "n_remember": 88,
+   "remember": 0.4659090909090909,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "summary",
+   "sessions": 20,
+   "n_remember": 92,
+   "remember": 0.2717391304347826,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "summary",
+   "sessions": 50,
+   "n_remember": 82,
+   "remember": 0.3048780487804878,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "window",
+   "sessions": 5,
+   "n_remember": 88,
+   "remember": 0.10227272727272728,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0851063829787234
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "window",
+   "sessions": 20,
+   "n_remember": 92,
+   "remember": 0.06521739130434782,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.030612244897959183
+  },
+  {
+   "backend": "ollama qwen2.5 7B",
+   "strategy": "window",
+   "sessions": 50,
+   "n_remember": 82,
+   "remember": 0.036585365853658534,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.045454545454545456
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "facts_append",
+   "sessions": 5,
+   "n_remember": 88,
+   "remember": 0.3068181818181818,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "facts_append",
+   "sessions": 20,
+   "n_remember": 92,
+   "remember": 0.2717391304347826,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.01020408163265306
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "facts_append",
+   "sessions": 50,
+   "n_remember": 82,
+   "remember": 0.3048780487804878,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.022727272727272728
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "facts_append_oracle",
+   "sessions": 5,
+   "n_remember": 88,
+   "remember": 0.8181818181818182,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "facts_append_oracle",
+   "sessions": 20,
+   "n_remember": 92,
+   "remember": 0.6956521739130435,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "facts_append_oracle",
+   "sessions": 50,
+   "n_remember": 82,
+   "remember": 0.6951219512195121,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "full",
+   "sessions": 5,
+   "n_remember": 88,
+   "remember": 0.5340909090909091,
+   "n_forget": 12,
+   "forget": 0.0,
+   "over_forget": 0.010638297872340425
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "full",
+   "sessions": 20,
+   "n_remember": 92,
+   "remember": 0.42391304347826086,
+   "n_forget": 12,
+   "forget": 0.5,
+   "over_forget": 0.02040816326530612
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "full",
+   "sessions": 50,
+   "n_remember": 82,
+   "remember": 0.4878048780487805,
+   "n_forget": 12,
+   "forget": 0.6666666666666667,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "full_redact",
+   "sessions": 5,
+   "n_remember": 88,
+   "remember": 0.5227272727272727,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.02127659574468085
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "full_redact",
+   "sessions": 20,
+   "n_remember": 92,
+   "remember": 0.3695652173913043,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.04081632653061224
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "full_redact",
+   "sessions": 50,
+   "n_remember": 82,
+   "remember": 0.4634146341463415,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.011363636363636364
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "hybrid",
+   "sessions": 5,
+   "n_remember": 88,
+   "remember": 0.7613636363636364,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "hybrid",
+   "sessions": 20,
+   "n_remember": 92,
+   "remember": 0.6413043478260869,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "hybrid",
+   "sessions": 50,
+   "n_remember": 82,
+   "remember": 0.6463414634146342,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_drop",
+   "sessions": 5,
+   "n_remember": 88,
+   "remember": 0.5,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.031914893617021274
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_drop",
+   "sessions": 20,
+   "n_remember": 92,
+   "remember": 0.34782608695652173,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.02040816326530612
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_drop",
+   "sessions": 50,
+   "n_remember": 82,
+   "remember": 0.45121951219512196,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_drop_repos",
+   "sessions": 5,
+   "n_remember": 88,
+   "remember": 0.5227272727272727,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.02127659574468085
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_drop_repos",
+   "sessions": 20,
+   "n_remember": 92,
+   "remember": 0.3804347826086957,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.01020408163265306
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_drop_repos",
+   "sessions": 50,
+   "n_remember": 82,
+   "remember": 0.4634146341463415,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_evict_old",
+   "sessions": 5,
+   "n_remember": 88,
+   "remember": 0.22727272727272727,
+   "n_forget": 12,
+   "forget": 0.8333333333333334,
+   "over_forget": 0.031914893617021274
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_evict_old",
+   "sessions": 20,
+   "n_remember": 92,
+   "remember": 0.10869565217391304,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.16326530612244897
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_evict_old",
+   "sessions": 50,
+   "n_remember": 82,
+   "remember": 0.06097560975609756,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.19318181818181818
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_full",
+   "sessions": 5,
+   "n_remember": 88,
+   "remember": 0.5454545454545454,
+   "n_forget": 12,
+   "forget": 0.0,
+   "over_forget": 0.010638297872340425
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_full",
+   "sessions": 20,
+   "n_remember": 92,
+   "remember": 0.40217391304347827,
+   "n_forget": 12,
+   "forget": 0.5,
+   "over_forget": 0.02040816326530612
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "kv_full",
+   "sessions": 50,
+   "n_remember": 82,
+   "remember": 0.4634146341463415,
+   "n_forget": 12,
+   "forget": 0.5833333333333333,
+   "over_forget": 0.0
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "rag",
+   "sessions": 5,
+   "n_remember": 88,
+   "remember": 0.7840909090909091,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.02127659574468085
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "rag",
+   "sessions": 20,
+   "n_remember": 92,
+   "remember": 0.5434782608695652,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.05102040816326531
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "rag",
+   "sessions": 50,
+   "n_remember": 82,
+   "remember": 0.6585365853658537,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.045454545454545456
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "summary",
+   "sessions": 5,
+   "n_remember": 88,
+   "remember": 0.14772727272727273,
+   "n_forget": 12,
+   "forget": 0.9166666666666666,
+   "over_forget": 0.0425531914893617
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "summary",
+   "sessions": 20,
+   "n_remember": 92,
+   "remember": 0.10869565217391304,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.10204081632653061
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "summary",
+   "sessions": 50,
+   "n_remember": 82,
+   "remember": 0.036585365853658534,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.09090909090909091
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "window",
+   "sessions": 5,
+   "n_remember": 88,
+   "remember": 0.09090909090909091,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.11702127659574468
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "window",
+   "sessions": 20,
+   "n_remember": 92,
+   "remember": 0.05434782608695652,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.11224489795918367
+  },
+  {
+   "backend": "hf qwen2.5 3B",
+   "strategy": "window",
+   "sessions": 50,
+   "n_remember": 82,
+   "remember": 0.024390243902439025,
+   "n_forget": 12,
+   "forget": 1.0,
+   "over_forget": 0.10227272727272728
+  }
+ ],
+ "answer_latency_s": {
+  "full": {
+   "5": 1.130922155837782,
+   "20": 4.667265395401046,
+   "50": 61.81957683444599
+  },
+  "kv_full": {
+   "5": 0.5345804684605225,
+   "20": 0.9076378823545007,
+   "50": 1.816760675360027
+  }
+ }
+}
